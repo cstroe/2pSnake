@@ -53,7 +53,7 @@ fn main() {
         // Game States
         .init_state::<GameState>()
         // Core persistent systems
-        .add_systems(Startup, (setup_camera, setup_playfield, setup_svg_sprites))
+        .add_systems(Startup, (setup_camera, setup_playfield, setup_svg_sprites, setup_audio))
         .add_systems(Update, (update_arena_layout, draw_arena_borders))
         // Controller Selection State
         .add_systems(OnEnter(GameState::ControllerSelect), setup_controller_select_ui)

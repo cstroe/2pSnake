@@ -12,6 +12,7 @@ pub fn game_clock_tick(
     time: Res<Time>,
     layout: Res<ArenaLayout>,
     sprites: Res<SpriteAssets>,
+    sound_assets: Res<SoundAssets>,
     mut game_clock: ResMut<GameClock>,
     mut notification: ResMut<NotificationMessage>,
     mut winner_info: ResMut<GameWinner>,
@@ -162,6 +163,12 @@ pub fn game_clock_tick(
             let mut occupied: Vec<IVec2> = p1.body.iter().chain(p2.body.iter()).copied().collect();
             let mut rng = rand::rng();
             spawn_one_fruit(&mut commands, &layout, &sprites, &mut occupied, 0.0, &mut rng);
+
+            // Play fruit eating sound effect
+            commands.spawn((
+                AudioPlayer::new(sound_assets.eat_fruit.clone()),
+                PlaybackSettings::DESPAWN,
+            ));
         }
 
         p1.body.push_front(p1_next);
@@ -223,6 +230,12 @@ pub fn game_clock_tick(
             let mut occupied: Vec<IVec2> = p1.body.iter().chain(p2.body.iter()).copied().collect();
             let mut rng = rand::rng();
             spawn_one_fruit(&mut commands, &layout, &sprites, &mut occupied, 0.0, &mut rng);
+
+            // Play fruit eating sound effect
+            commands.spawn((
+                AudioPlayer::new(sound_assets.eat_fruit.clone()),
+                PlaybackSettings::DESPAWN,
+            ));
         }
 
         p2.body.push_front(p2_next);

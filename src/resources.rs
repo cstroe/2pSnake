@@ -147,3 +147,27 @@ impl Default for NotificationMessage {
         }
     }
 }
+
+const SFX_POWERUP_WAV: &[u8] = include_bytes!("../assets/sound/SFX_Powerup_01.wav");
+
+#[derive(Resource, Clone)]
+pub struct SoundAssets {
+    pub eat_fruit: Handle<AudioSource>,
+}
+
+pub fn setup_audio(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut audio_assets: ResMut<Assets<AudioSource>>,
+) {
+    let eat_fruit = if std::path::Path::new("assets/sound/SFX_Powerup_01.wav").exists() {
+        asset_server.load("sound/SFX_Powerup_01.wav")
+    } else {
+        audio_assets.add(AudioSource {
+            bytes: SFX_POWERUP_WAV.into(),
+        })
+    };
+
+    commands.insert_resource(SoundAssets { eat_fruit });
+}
+
