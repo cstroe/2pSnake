@@ -9,8 +9,13 @@ pub fn setup_camera(mut commands: Commands) {
 
 pub fn setup_playfield(
     mut commands: Commands,
-    layout: Res<ArenaLayout>,
+    windows: Query<&Window>,
+    mut layout: ResMut<ArenaLayout>,
 ) {
+    if let Some(window) = windows.iter().next() {
+        layout.update(window.width(), window.height());
+    }
+
     let arena_size = Vec2::new(
         GRID_WIDTH as f32 * layout.cell_size,
         GRID_HEIGHT as f32 * layout.cell_size,
@@ -31,9 +36,10 @@ pub fn update_arena_layout(
     windows: Query<&Window>,
     mut layout: ResMut<ArenaLayout>,
     mut bg_query: Query<(&mut Sprite, &mut Transform), With<PlayfieldBg>>,
-    mut head_query: Query<(&mut Transform, &mut Sprite, &SnakeHead), (Without<PlayfieldBg>, Without<Fruit>, Without<SnakeSegment>)>,
-    mut segment_query: Query<(&mut Transform, &mut Sprite, &SnakeSegment), (Without<PlayfieldBg>, Without<Fruit>, Without<SnakeHead>)>,
+    mut head_query: Query<(&mut Transform, &mut Sprite), (With<SnakeHead>, Without<PlayfieldBg>, Without<Fruit>, Without<SnakeSegment>)>,
+    mut segment_query: Query<(&mut Transform, &mut Sprite), (With<SnakeSegment>, Without<PlayfieldBg>, Without<Fruit>, Without<SnakeHead>)>,
     mut fruit_query: Query<(&mut Transform, &mut Sprite, &Fruit), (Without<PlayfieldBg>, Without<SnakeHead>, Without<SnakeSegment>)>,
+    snakes_query: Query<&SnakeState>,
 ) {
     let Ok(window) = windows.single() else {
         return;
@@ -42,8 +48,10 @@ pub fn update_arena_layout(
     let cur_w = window.width();
     let cur_h = window.height();
 
-    // Check if window resized
-    let size_changed = (cur_w - layout.window_size.x).abs() > 0.5 || (cur_h - layout.window_size.y).abs() > 0.5;
+    // Check if window resized or if layout has not been computed yet
+    let size_changed = (cur_w - layout.window_size.x).abs() > 0.5 
+                    || (cur_h - layout.window_size.y).abs() > 0.5
+                    || layout.cell_size <= 0.01;
 
     if size_changed {
         layout.update(cur_w, cur_h);
@@ -59,22 +67,33 @@ pub fn update_arena_layout(
             transform.translation = layout.grid_center.extend(-10.0);
         }
 
-        // Adjust head size
-        let head_size = (layout.cell_size * 2.2).max(4.0);
-        for (_, mut sprite, _) in &mut head_query {
-            sprite.custom_size = Some(Vec2::splat(head_size));
-        }
-
-        // Adjust segment size
-        let seg_size = (layout.cell_size * 1.5).max(3.0);
-        for (_, mut sprite, _) in &mut segment_query {
-            sprite.custom_size = Some(Vec2::splat(seg_size));
-        }
-
-        // Adjust fruit size
+        // Adjust fruit size and reposition to match new grid scaling
         let fruit_size = (layout.cell_size * 2.2).max(4.0);
-        for (_, mut sprite, _) in &mut fruit_query {
+        for (mut transform, mut sprite, fruit) in &mut fruit_query {
             sprite.custom_size = Some(Vec2::splat(fruit_size));
+            transform.translation = layout.grid_to_world(fruit.cell).extend(1.5);
+        }
+
+        // Adjust snake head & segments size and reposition to match new grid scaling
+        let head_size = (layout.cell_size * 2.2).max(4.0);
+        let seg_size = (layout.cell_size * 1.5).max(3.0);
+
+        for snake in &snakes_query {
+            if let Ok((mut transform, mut sprite)) = head_query.get_mut(snake.head_entity) {
+                sprite.custom_size = Some(Vec2::splat(head_size));
+                if let Some(&head_cell) = snake.body.front() {
+                    transform.translation = layout.grid_to_world(head_cell).extend(2.0);
+                }
+            }
+
+            for (i, &entity) in snake.segment_entities.iter().enumerate() {
+                if let Some(&seg_cell) = snake.body.get(i + 1) {
+                    if let Ok((mut transform, mut sprite)) = segment_query.get_mut(entity) {
+                        sprite.custom_size = Some(Vec2::splat(seg_size));
+                        transform.translation = layout.grid_to_world(seg_cell).extend(1.0);
+                    }
+                }
+            }
         }
     }
 }

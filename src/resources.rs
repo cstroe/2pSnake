@@ -13,10 +13,10 @@ pub struct ArenaLayout {
 impl Default for ArenaLayout {
     fn default() -> Self {
         Self {
-            cell_size: 2.0,
+            cell_size: 0.0,
             grid_origin: Vec2::ZERO,
             grid_center: Vec2::ZERO,
-            window_size: Vec2::new(1600.0, 900.0),
+            window_size: Vec2::ZERO,
         }
     }
 }
