@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="p1_shell" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#006064"/>
+      <stop offset="60%" stop-color="#00b0ff"/>
+      <stop offset="100%" stop-color="#00e5ff"/>
+    </linearGradient>
+    <linearGradient id="p1_visor" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#80d8ff"/>
+      <stop offset="100%" stop-color="#ffffff"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Base Cyber Hull (pointing right) -->
+  <path d="M 6,10 L 36,8 L 58,26 L 62,32 L 58,38 L 36,56 L 6,54 L 14,32 Z" 
+        fill="url(#p1_shell)" stroke="#00e5ff" stroke-width="3" stroke-linejoin="round"/>
+
+  <!-- Energy Trench Lines -->
+  <path d="M 10,20 L 32,18 L 48,32 L 32,46 L 10,44" 
+        fill="none" stroke="#18ffff" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Forward Looking Visor / Cockpit (Facing Right) -->
+  <path d="M 38,23 L 54,32 L 38,41 L 32,32 Z" 
+        fill="url(#p1_visor)" stroke="#ffffff" stroke-width="1.5"/>
+
+  <!-- Twin Cyber Optics (Eyes) -->
+  <circle cx="42" cy="18" r="4.5" fill="#ffffff" stroke="#00e5ff" stroke-width="1.5"/>
+  <circle cx="44" cy="18" r="2" fill="#00e5ff"/>
+
+  <circle cx="42" cy="46" r="4.5" fill="#ffffff" stroke="#00e5ff" stroke-width="1.5"/>
+  <circle cx="44" cy="46" r="2" fill="#00e5ff"/>
+
+  <!-- Thruster Nodes at Back -->
+  <rect x="4" y="16" width="4" height="8" rx="1.5" fill="#ffffff"/>
+  <rect x="4" y="40" width="4" height="8" rx="1.5" fill="#ffffff"/>
+</svg>

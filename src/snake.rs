@@ -5,17 +5,20 @@ use crate::constants::*;
 use crate::types::*;
 use crate::resources::*;
 use crate::components::*;
+use crate::svg_utils::SpriteAssets;
 
 pub fn spawn_initial_snakes(
     mut commands: Commands,
     layout: Res<ArenaLayout>,
+    sprites: Res<SpriteAssets>,
 ) {
     // 1. Spawn Player 1 (Cyan)
     spawn_snake(
         &mut commands,
         &layout,
+        &sprites,
         PlayerId::Player1,
-        IVec2::new(25, GRID_HEIGHT / 2),
+        IVec2::new(20, GRID_HEIGHT / 2),
         Direction::Right,
     );
 
@@ -23,8 +26,9 @@ pub fn spawn_initial_snakes(
     spawn_snake(
         &mut commands,
         &layout,
+        &sprites,
         PlayerId::Player2,
-        IVec2::new(GRID_WIDTH - 26, GRID_HEIGHT / 2),
+        IVec2::new(GRID_WIDTH - 21, GRID_HEIGHT / 2),
         Direction::Left,
     );
 }
@@ -32,26 +36,19 @@ pub fn spawn_initial_snakes(
 pub fn spawn_snake(
     commands: &mut Commands,
     layout: &ArenaLayout,
+    sprites: &SpriteAssets,
     player: PlayerId,
     start_pos: IVec2,
     direction: Direction,
 ) -> Entity {
-    let head_color = match player {
-        PlayerId::Player1 => COLOR_P1_HEAD,
-        PlayerId::Player2 => COLOR_P2_HEAD,
-    };
-    let body_color = match player {
-        PlayerId::Player1 => COLOR_P1,
-        PlayerId::Player2 => COLOR_P2,
-    };
-    let eye_color = match player {
-        PlayerId::Player1 => COLOR_P1_EYES,
-        PlayerId::Player2 => COLOR_P2_EYES,
+    let (head_image, body_image) = match player {
+        PlayerId::Player1 => (sprites.p1_head.clone(), sprites.p1_body.clone()),
+        PlayerId::Player2 => (sprites.p2_head.clone(), sprites.p2_body.clone()),
     };
 
     let head_world = layout.grid_to_world(start_pos);
-    let head_size = (layout.cell_size * 1.6).max(3.0);
-    let seg_size = (layout.cell_size * 1.0).max(1.5);
+    let head_size = (layout.cell_size * 2.2).max(4.0);
+    let seg_size = (layout.cell_size * 1.5).max(3.0);
 
     // Build initial body segments trailing behind start_pos
     let mut body = VecDeque::new();
@@ -68,7 +65,7 @@ pub fn spawn_snake(
         let seg_entity = commands.spawn((
             SnakeSegment { player, index: i },
             Sprite {
-                color: body_color,
+                image: body_image.clone(),
                 custom_size: Some(Vec2::splat(seg_size)),
                 ..default()
             },
@@ -78,11 +75,12 @@ pub fn spawn_snake(
         segment_entities.push_back(seg_entity);
     }
 
-    // Spawn Head entity with eye children for directional visual feedback
+    // Spawn Head entity using vector SVG texture
+    // Designed pointing Right (0 deg), so rotation by direction.angle() naturally faces user's direction
     let head_entity = commands.spawn((
         SnakeHead { player },
         Sprite {
-            color: head_color,
+            image: head_image,
             custom_size: Some(Vec2::splat(head_size)),
             ..default()
         },
@@ -91,29 +89,7 @@ pub fn spawn_snake(
             rotation: Quat::from_rotation_z(direction.angle()),
             ..default()
         },
-    )).with_children(|head| {
-        // Left Eye
-        head.spawn((
-            SnakeEye { player, is_left: true },
-            Sprite {
-                color: eye_color,
-                custom_size: Some(Vec2::splat((head_size * 0.3).max(1.5))),
-                ..default()
-            },
-            Transform::from_xyz(head_size * 0.25, head_size * 0.25, 0.1),
-        ));
-
-        // Right Eye
-        head.spawn((
-            SnakeEye { player, is_left: false },
-            Sprite {
-                color: eye_color,
-                custom_size: Some(Vec2::splat((head_size * 0.3).max(1.5))),
-                ..default()
-            },
-            Transform::from_xyz(head_size * 0.25, -head_size * 0.25, 0.1),
-        ));
-    }).id();
+    )).id();
 
     // Spawn SnakeState entity
     commands.spawn(SnakeState {
@@ -149,6 +125,7 @@ pub fn update_snake_head_visuals(
 pub fn respawn_snake<F: bevy::ecs::query::QueryFilter>(
     commands: &mut Commands,
     layout: &ArenaLayout,
+    sprites: &SpriteAssets,
     snake: &mut SnakeState,
     other_snakes_bodies: &[&VecDeque<IVec2>],
     head_transforms: &mut Query<&mut Transform, F>,
@@ -166,14 +143,14 @@ pub fn respawn_snake<F: bevy::ecs::query::QueryFilter>(
 
     // Find a suitable empty location with space to move
     let mut best_pos = IVec2::new(
-        rng.random_range(20..(GRID_WIDTH - 20)),
-        rng.random_range(20..(GRID_HEIGHT - 20)),
+        rng.random_range(16..(GRID_WIDTH - 16)),
+        rng.random_range(14..(GRID_HEIGHT - 14)),
     );
     let mut best_dir = Direction::Right;
 
     for _ in 0..60 {
-        let candidate_x = rng.random_range(16..(GRID_WIDTH - 16));
-        let candidate_y = rng.random_range(16..(GRID_HEIGHT - 16));
+        let candidate_x = rng.random_range(12..(GRID_WIDTH - 12));
+        let candidate_y = rng.random_range(10..(GRID_HEIGHT - 10));
         let candidate = IVec2::new(candidate_x, candidate_y);
 
         let dirs = [Direction::Right, Direction::Left, Direction::Up, Direction::Down];
@@ -183,7 +160,7 @@ pub fn respawn_snake<F: bevy::ecs::query::QueryFilter>(
         let mut clear = true;
         for step in 0..INITIAL_SNAKE_LENGTH as i32 {
             let check_cell = candidate + dir.to_ivec2() * step;
-            if check_cell.x < 5 || check_cell.x >= GRID_WIDTH - 5 || check_cell.y < 5 || check_cell.y >= GRID_HEIGHT - 5 {
+            if check_cell.x < 3 || check_cell.x >= GRID_WIDTH - 3 || check_cell.y < 3 || check_cell.y >= GRID_HEIGHT - 3 {
                 clear = false;
                 break;
             }
@@ -210,11 +187,11 @@ pub fn respawn_snake<F: bevy::ecs::query::QueryFilter>(
     snake.next_direction = best_dir;
     snake.body.push_back(best_pos);
 
-    let body_color = match snake.player {
-        PlayerId::Player1 => COLOR_P1,
-        PlayerId::Player2 => COLOR_P2,
+    let body_image = match snake.player {
+        PlayerId::Player1 => sprites.p1_body.clone(),
+        PlayerId::Player2 => sprites.p2_body.clone(),
     };
-    let seg_size = (layout.cell_size * 1.0).max(1.5);
+    let seg_size = (layout.cell_size * 1.5).max(3.0);
 
     // Spawn new body segments trailing behind respawn position
     let step_back = best_dir.opposite().to_ivec2();
@@ -226,7 +203,7 @@ pub fn respawn_snake<F: bevy::ecs::query::QueryFilter>(
         let seg_entity = commands.spawn((
             SnakeSegment { player: snake.player, index: i },
             Sprite {
-                color: body_color,
+                image: body_image.clone(),
                 custom_size: Some(Vec2::splat(seg_size)),
                 ..default()
             },

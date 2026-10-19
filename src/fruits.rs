@@ -4,10 +4,12 @@ use crate::constants::*;
 use crate::types::*;
 use crate::resources::*;
 use crate::components::*;
+use crate::svg_utils::SpriteAssets;
 
 pub fn spawn_initial_fruits(
     mut commands: Commands,
     layout: Res<ArenaLayout>,
+    sprites: Res<SpriteAssets>,
     snakes: Query<&SnakeState>,
 ) {
     let mut rng = rand::rng();
@@ -20,20 +22,21 @@ pub fn spawn_initial_fruits(
     }
 
     for i in 0..NUM_CONCURRENT_FRUITS {
-        spawn_one_fruit(&mut commands, &layout, &mut occupied, i as f32 * 0.3, &mut rng);
+        spawn_one_fruit(&mut commands, &layout, &sprites, &mut occupied, i as f32 * 0.3, &mut rng);
     }
 }
 
 pub fn spawn_one_fruit(
     commands: &mut Commands,
     layout: &ArenaLayout,
+    sprites: &SpriteAssets,
     occupied: &mut Vec<IVec2>,
     phase_offset: f32,
     rng: &mut impl rand::Rng,
 ) -> Option<Entity> {
     for _ in 0..100 {
-        let x = rng.random_range(10..(GRID_WIDTH - 10));
-        let y = rng.random_range(10..(GRID_HEIGHT - 10));
+        let x = rng.random_range(6..(GRID_WIDTH - 6));
+        let y = rng.random_range(6..(GRID_HEIGHT - 6));
         let cell = IVec2::new(x, y);
 
         if !occupied.contains(&cell) {
@@ -50,7 +53,7 @@ pub fn spawn_one_fruit(
                     phase_offset,
                 },
                 Sprite {
-                    color: fruit_type.color(),
+                    image: sprites.fruit_handle(fruit_type),
                     custom_size: Some(Vec2::splat(fruit_size)),
                     ..default()
                 },
@@ -73,7 +76,7 @@ pub fn animate_fruits(
     let t = time.elapsed_secs();
 
     for (mut sprite, fruit) in &mut query {
-        let pulse = 1.0 + 0.25 * (t * 4.0 + fruit.phase_offset).sin();
+        let pulse = 1.0 + 0.22 * (t * 4.0 + fruit.phase_offset).sin();
         sprite.custom_size = Some(Vec2::splat(base_size * pulse));
     }
 }

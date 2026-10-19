@@ -26,6 +26,7 @@ use input::*;
 use game_tick::*;
 use hud::*;
 use round_over::*;
+use svg_utils::*;
 
 fn main() {
     App::new()
@@ -48,10 +49,11 @@ fn main() {
         .init_resource::<ControllerAssignments>()
         .init_resource::<GameWinner>()
         .init_resource::<NotificationMessage>()
+        .init_resource::<SpriteAssets>()
         // Game States
         .init_state::<GameState>()
         // Core persistent systems
-        .add_systems(Startup, (setup_camera, setup_playfield))
+        .add_systems(Startup, (setup_camera, setup_playfield, setup_svg_sprites))
         .add_systems(Update, (update_arena_layout, draw_arena_borders))
         // Controller Selection State
         .add_systems(OnEnter(GameState::ControllerSelect), setup_controller_select_ui)

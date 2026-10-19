@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
-pub const GRID_WIDTH: i32 = 161;
-pub const GRID_HEIGHT: i32 = 100;
+pub const GRID_WIDTH: i32 = 130;
+pub const GRID_HEIGHT: i32 = 80;
 
 pub const INITIAL_SNAKE_LENGTH: usize = 6;
 pub const DEFAULT_TICK_SECONDS: f32 = 0.2; // 200 milliseconds per tick
@@ -17,12 +17,16 @@ pub const ARENA_PADDING_PX: f32 = 16.0;
 
 // Player 1 theme (Cyan / Neon Blue)
 pub const COLOR_P1: Color = Color::srgb(0.0, 0.9, 1.0);
+#[allow(dead_code)]
 pub const COLOR_P1_HEAD: Color = Color::srgb(0.7, 1.0, 1.0);
+#[allow(dead_code)]
 pub const COLOR_P1_EYES: Color = Color::srgb(1.0, 1.0, 1.0);
 
 // Player 2 theme (Orange / Neon Coral)
 pub const COLOR_P2: Color = Color::srgb(1.0, 0.4, 0.05);
+#[allow(dead_code)]
 pub const COLOR_P2_HEAD: Color = Color::srgb(1.0, 0.8, 0.4);
+#[allow(dead_code)]
 pub const COLOR_P2_EYES: Color = Color::srgb(1.0, 1.0, 1.0);
 
 // Arena & UI theme

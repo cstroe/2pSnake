@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <radialGradient id="orange_glow" cx="40%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#ffe082"/>
+      <stop offset="40%" stop-color="#ff9100"/>
+      <stop offset="100%" stop-color="#e65100"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Orange Sphere -->
+  <circle cx="32" cy="34" r="24" fill="url(#orange_glow)" stroke="#ffffff" stroke-width="2"/>
+
+  <!-- Citrus Segment / Slice Accent -->
+  <circle cx="32" cy="34" r="18" fill="none" stroke="#fff3e0" stroke-width="2" stroke-dasharray="8 4"/>
+
+  <!-- Stem and Leaf -->
+  <path d="M 32,10 C 32,6 35,4 38,3" fill="none" stroke="#5d4037" stroke-width="3" stroke-linecap="round"/>
+  <path d="M 34,8 C 42,4 48,6 50,2 C 48,10 42,12 34,8 Z" fill="#76ff03" stroke="#ffffff" stroke-width="1"/>
+
+  <!-- Specular Reflection -->
+  <ellipse cx="24" cy="24" rx="5" ry="7" transform="rotate(-30 24 24)" fill="#ffffff" opacity="0.6"/>
+</svg>

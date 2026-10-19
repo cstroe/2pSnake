@@ -5,11 +5,13 @@ use crate::resources::*;
 use crate::components::*;
 use crate::snake::respawn_snake;
 use crate::fruits::spawn_one_fruit;
+use crate::svg_utils::SpriteAssets;
 
 pub fn game_clock_tick(
     mut commands: Commands,
     time: Res<Time>,
     layout: Res<ArenaLayout>,
+    sprites: Res<SpriteAssets>,
     mut game_clock: ResMut<GameClock>,
     mut notification: ResMut<NotificationMessage>,
     mut winner_info: ResMut<GameWinner>,
@@ -107,6 +109,7 @@ pub fn game_clock_tick(
         respawn_snake(
             &mut commands,
             &layout,
+            &sprites,
             &mut p1,
             &[&p2_body_copy],
             &mut head_transforms,
@@ -121,6 +124,7 @@ pub fn game_clock_tick(
         respawn_snake(
             &mut commands,
             &layout,
+            &sprites,
             &mut p2,
             &[&p1_body_copy],
             &mut head_transforms,
@@ -157,19 +161,20 @@ pub fn game_clock_tick(
 
             let mut occupied: Vec<IVec2> = p1.body.iter().chain(p2.body.iter()).copied().collect();
             let mut rng = rand::rng();
-            spawn_one_fruit(&mut commands, &layout, &mut occupied, 0.0, &mut rng);
+            spawn_one_fruit(&mut commands, &layout, &sprites, &mut occupied, 0.0, &mut rng);
         }
 
         p1.body.push_front(p1_next);
 
+        let seg_size = (layout.cell_size * 1.5).max(3.0);
+
         if p1.growth_pending > 0 {
             p1.growth_pending -= 1;
             let seg_world = layout.grid_to_world(old_head);
-            let seg_size = (layout.cell_size * 1.0).max(1.5);
             let new_seg_entity = commands.spawn((
                 SnakeSegment { player: PlayerId::Player1, index: p1.body.len() },
                 Sprite {
-                    color: COLOR_P1,
+                    image: sprites.p1_body.clone(),
                     custom_size: Some(Vec2::splat(seg_size)),
                     ..default()
                 },
@@ -217,19 +222,20 @@ pub fn game_clock_tick(
 
             let mut occupied: Vec<IVec2> = p1.body.iter().chain(p2.body.iter()).copied().collect();
             let mut rng = rand::rng();
-            spawn_one_fruit(&mut commands, &layout, &mut occupied, 0.0, &mut rng);
+            spawn_one_fruit(&mut commands, &layout, &sprites, &mut occupied, 0.0, &mut rng);
         }
 
         p2.body.push_front(p2_next);
 
+        let seg_size = (layout.cell_size * 1.5).max(3.0);
+
         if p2.growth_pending > 0 {
             p2.growth_pending -= 1;
             let seg_world = layout.grid_to_world(old_head);
-            let seg_size = (layout.cell_size * 1.0).max(1.5);
             let new_seg_entity = commands.spawn((
                 SnakeSegment { player: PlayerId::Player2, index: p2.body.len() },
                 Sprite {
-                    color: COLOR_P2,
+                    image: sprites.p2_body.clone(),
                     custom_size: Some(Vec2::splat(seg_size)),
                     ..default()
                 },

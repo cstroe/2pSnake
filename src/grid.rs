@@ -60,19 +60,19 @@ pub fn update_arena_layout(
         }
 
         // Adjust head size
-        let head_size = (layout.cell_size * 1.6).max(3.0);
+        let head_size = (layout.cell_size * 2.2).max(4.0);
         for (_, mut sprite, _) in &mut head_query {
             sprite.custom_size = Some(Vec2::splat(head_size));
         }
 
         // Adjust segment size
-        let seg_size = (layout.cell_size * 1.0).max(1.5);
+        let seg_size = (layout.cell_size * 1.5).max(3.0);
         for (_, mut sprite, _) in &mut segment_query {
             sprite.custom_size = Some(Vec2::splat(seg_size));
         }
 
         // Adjust fruit size
-        let fruit_size = (layout.cell_size * 2.0).max(4.0);
+        let fruit_size = (layout.cell_size * 2.2).max(4.0);
         for (_, mut sprite, _) in &mut fruit_query {
             sprite.custom_size = Some(Vec2::splat(fruit_size));
         }
