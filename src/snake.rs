@@ -15,7 +15,7 @@ pub fn spawn_initial_snakes(
         &mut commands,
         &layout,
         PlayerId::Player1,
-        IVec2::new(60, GRID_HEIGHT / 2),
+        IVec2::new(25, GRID_HEIGHT / 2),
         Direction::Right,
     );
 
@@ -24,7 +24,7 @@ pub fn spawn_initial_snakes(
         &mut commands,
         &layout,
         PlayerId::Player2,
-        IVec2::new(GRID_WIDTH - 61, GRID_HEIGHT / 2),
+        IVec2::new(GRID_WIDTH - 26, GRID_HEIGHT / 2),
         Direction::Left,
     );
 }
@@ -166,14 +166,14 @@ pub fn respawn_snake<F: bevy::ecs::query::QueryFilter>(
 
     // Find a suitable empty location with space to move
     let mut best_pos = IVec2::new(
-        rng.random_range(30..(GRID_WIDTH - 30)),
-        rng.random_range(30..(GRID_HEIGHT - 30)),
+        rng.random_range(20..(GRID_WIDTH - 20)),
+        rng.random_range(20..(GRID_HEIGHT - 20)),
     );
     let mut best_dir = Direction::Right;
 
     for _ in 0..60 {
-        let candidate_x = rng.random_range(25..(GRID_WIDTH - 25));
-        let candidate_y = rng.random_range(25..(GRID_HEIGHT - 25));
+        let candidate_x = rng.random_range(16..(GRID_WIDTH - 16));
+        let candidate_y = rng.random_range(16..(GRID_HEIGHT - 16));
         let candidate = IVec2::new(candidate_x, candidate_y);
 
         let dirs = [Direction::Right, Direction::Left, Direction::Up, Direction::Down];

@@ -4,10 +4,10 @@ A 2-player competitive arcade game built using the **Bevy 2D game framework**, f
 
 ## Overview & Game Rules
 
-- **Arena**: 485 squares wide by 300 squares tall (145,500 cells).
+- **Arena**: 161 squares wide by 100 squares tall (16,100 cells).
 - **Adaptive Resolution**: Cell sizing automatically scales according to the window/monitor resolution (1080p, 1440p, 4K, 16:9 large TVs) while leaving space for the top HUD.
-- **Objective**: Collect various fruits scattered across the arena while cutting off and boxing in the opponent.
-- **Victory**: The first player to collect the level goal (15 fruits) wins the match! Alternatively, if the 5-minute round timer expires, the player with the highest score wins.
+- **Objective**: Collect unlimited fruits across the arena while cutting off and boxing in the opponent.
+- **Victory**: The match ends when the round time runs out! The player who collected the highest fruit score wins the match.
 - **Growth**: Each fruit type provides score points and fixed length growth (+2 to +6 segments).
 - **Collision & Respawn**: Hitting the arena border, yourself, or the other player's snake results in death. The snake respawns in a safe, empty area of the grid with its starting length while preserving its score.
 - **Clock Tick**: Starts at 200 milliseconds (0.2s) per tick on level 1, adjustable dynamically during gameplay via controller bumpers or keyboard.
@@ -42,7 +42,7 @@ Before the game starts, a dedicated **Controller Selection Room** is displayed:
 
 1. **Controller Select Screen**: Assign devices and press A to ready up.
 2. **3-Second Countdown**:
-   - The 485x300 arena is displayed with Player 1 (Cyan) and Player 2 (Orange) stationed on opposite sides.
+   - The 161x100 arena is displayed with Player 1 (Cyan) and Player 2 (Orange) stationed on opposite sides.
    - Animated countdown: `3` -> `2` -> `1` -> `START!`.
    - After "START!" disappears (1-second delay), player controls unlock and the game tick begins.
 3. **Active Gameplay**:

@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
-pub const GRID_WIDTH: i32 = 485;
-pub const GRID_HEIGHT: i32 = 300;
+pub const GRID_WIDTH: i32 = 161;
+pub const GRID_HEIGHT: i32 = 100;
 
 pub const INITIAL_SNAKE_LENGTH: usize = 6;
 pub const DEFAULT_TICK_SECONDS: f32 = 0.2; // 200 milliseconds per tick
@@ -9,7 +9,6 @@ pub const MIN_TICK_SECONDS: f32 = 0.02;
 pub const MAX_TICK_SECONDS: f32 = 2.0;
 pub const TICK_STEP: f32 = 0.02;
 
-pub const TARGET_FRUITS_TO_WIN: u32 = 15;
 pub const INITIAL_ROUND_TIME_SECS: f32 = 300.0; // 5 minutes
 pub const NUM_CONCURRENT_FRUITS: usize = 24;
 

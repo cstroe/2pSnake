@@ -39,13 +39,13 @@ pub fn game_clock_tick(
 
         if p1_score > p2_score {
             winner_info.winner = Some(PlayerId::Player1);
-            winner_info.reason = "Time expired! Player 1 had the higher score!".to_string();
+            winner_info.reason = format!("Time expired! Player 1 collected the most fruits ({p1_score} vs {p2_score})!");
         } else if p2_score > p1_score {
             winner_info.winner = Some(PlayerId::Player2);
-            winner_info.reason = "Time expired! Player 2 had the higher score!".to_string();
+            winner_info.reason = format!("Time expired! Player 2 collected the most fruits ({p2_score} vs {p1_score})!");
         } else {
             winner_info.winner = None;
-            winner_info.reason = "Time expired! The match ended in a Draw!".to_string();
+            winner_info.reason = format!("Time expired! The match ended in a Draw ({p1_score} each)!");
         }
 
         next_state.set(GameState::RoundOver);
@@ -158,15 +158,6 @@ pub fn game_clock_tick(
             let mut occupied: Vec<IVec2> = p1.body.iter().chain(p2.body.iter()).copied().collect();
             let mut rng = rand::rng();
             spawn_one_fruit(&mut commands, &layout, &mut occupied, 0.0, &mut rng);
-
-            if p1.score >= TARGET_FRUITS_TO_WIN {
-                winner_info.winner = Some(PlayerId::Player1);
-                winner_info.reason = "Player 1 collected all target fruits to win the level!".to_string();
-                winner_info.p1_final_score = p1.score;
-                winner_info.p2_final_score = p2.score;
-                next_state.set(GameState::RoundOver);
-                return;
-            }
         }
 
         p1.body.push_front(p1_next);
@@ -227,15 +218,6 @@ pub fn game_clock_tick(
             let mut occupied: Vec<IVec2> = p1.body.iter().chain(p2.body.iter()).copied().collect();
             let mut rng = rand::rng();
             spawn_one_fruit(&mut commands, &layout, &mut occupied, 0.0, &mut rng);
-
-            if p2.score >= TARGET_FRUITS_TO_WIN {
-                winner_info.winner = Some(PlayerId::Player2);
-                winner_info.reason = "Player 2 collected all target fruits to win the level!".to_string();
-                winner_info.p1_final_score = p1.score;
-                winner_info.p2_final_score = p2.score;
-                next_state.set(GameState::RoundOver);
-                return;
-            }
         }
 
         p2.body.push_front(p2_next);

@@ -38,7 +38,7 @@ pub fn setup_hud(mut commands: Commands) {
 
             p1_box.spawn((
                 HudP1ScoreText,
-                Text::new("Fruits: 0 / 15  |  Len: 6"),
+                Text::new("Fruits: 0  |  Len: 6"),
                 TextFont { font_size: FontSize::Px(20.0), ..default() },
                 TextColor(Color::WHITE),
             ));
@@ -74,7 +74,7 @@ pub fn setup_hud(mut commands: Commands) {
 
             center.spawn((
                 HudMessageText,
-                Text::new("Grid: 485 x 300 | First to 15 Fruits Wins!"),
+                Text::new("Grid: 161 x 100 | Collect unlimited fruits until time expires!"),
                 TextFont { font_size: FontSize::Px(13.0), ..default() },
                 TextColor(COLOR_TEXT_MUTED),
             ));
@@ -95,7 +95,7 @@ pub fn setup_hud(mut commands: Commands) {
 
             p2_box.spawn((
                 HudP2ScoreText,
-                Text::new("Fruits: 0 / 15  |  Len: 6"),
+                Text::new("Fruits: 0  |  Len: 6"),
                 TextFont { font_size: FontSize::Px(20.0), ..default() },
                 TextColor(Color::WHITE),
             ));
@@ -117,11 +117,11 @@ pub fn update_hud(
     for snake in &snakes {
         if snake.player == PlayerId::Player1 {
             if let Some(mut text) = p1_score_text.iter_mut().next() {
-                **text = format!("Fruits: {} / {}  |  Len: {}", snake.score, TARGET_FRUITS_TO_WIN, snake.body.len());
+                **text = format!("Fruits: {}  |  Len: {}", snake.score, snake.body.len());
             }
         } else {
             if let Some(mut text) = p2_score_text.iter_mut().next() {
-                **text = format!("Fruits: {} / {}  |  Len: {}", snake.score, TARGET_FRUITS_TO_WIN, snake.body.len());
+                **text = format!("Fruits: {}  |  Len: {}", snake.score, snake.body.len());
             }
         }
     }
