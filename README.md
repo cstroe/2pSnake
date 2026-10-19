@@ -10,7 +10,7 @@ A 2-player competitive arcade game built using the **Bevy 2D game framework**, f
 - **Victory**: The first player to collect the level goal (15 fruits) wins the match! Alternatively, if the 5-minute round timer expires, the player with the highest score wins.
 - **Growth**: Each fruit type provides score points and fixed length growth (+2 to +6 segments).
 - **Collision & Respawn**: Hitting the arena border, yourself, or the other player's snake results in death. The snake respawns in a safe, empty area of the grid with its starting length while preserving its score.
-- **Clock Tick**: Starts at 1.0 second per tick on level 1, adjustable dynamically during gameplay via controller bumpers or keyboard.
+- **Clock Tick**: Starts at 200 milliseconds (0.2s) per tick on level 1, adjustable dynamically during gameplay via controller bumpers or keyboard.
 - **Responsive Head Look**: When a player presses a direction on the gamepad or keyboard, the snake's head and eyes immediately turn to look in that direction, showing the next move before the tick occurs.
 
 ---

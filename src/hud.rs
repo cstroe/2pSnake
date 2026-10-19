@@ -66,7 +66,7 @@ pub fn setup_hud(mut commands: Commands) {
 
                 row.spawn((
                     HudSpeedText,
-                    Text::new("TICK: 1.00s"),
+                    Text::new("TICK: 0.20s"),
                     TextFont { font_size: FontSize::Px(16.0), ..default() },
                     TextColor(COLOR_TEXT_MUTED),
                 ));
