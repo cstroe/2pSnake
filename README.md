@@ -4,7 +4,7 @@ A 2-player competitive arcade game built using the **Bevy 2D game framework**, f
 
 ## Overview & Game Rules
 
-- **Arena**: 650 squares wide by 400 squares tall (260,000 cells).
+- **Arena**: 485 squares wide by 300 squares tall (145,500 cells).
 - **Adaptive Resolution**: Cell sizing automatically scales according to the window/monitor resolution (1080p, 1440p, 4K, 16:9 large TVs) while leaving space for the top HUD.
 - **Objective**: Collect various fruits scattered across the arena while cutting off and boxing in the opponent.
 - **Victory**: The first player to collect the level goal (15 fruits) wins the match! Alternatively, if the 5-minute round timer expires, the player with the highest score wins.
@@ -42,7 +42,7 @@ Before the game starts, a dedicated **Controller Selection Room** is displayed:
 
 1. **Controller Select Screen**: Assign devices and press A to ready up.
 2. **3-Second Countdown**:
-   - The 650x400 arena is displayed with Player 1 (Cyan) and Player 2 (Orange) stationed on opposite sides.
+   - The 485x300 arena is displayed with Player 1 (Cyan) and Player 2 (Orange) stationed on opposite sides.
    - Animated countdown: `3` -> `2` -> `1` -> `START!`.
    - After "START!" disappears (1-second delay), player controls unlock and the game tick begins.
 3. **Active Gameplay**:

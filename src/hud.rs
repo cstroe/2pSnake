@@ -74,7 +74,7 @@ pub fn setup_hud(mut commands: Commands) {
 
             center.spawn((
                 HudMessageText,
-                Text::new("Grid: 650 x 400 | First to 15 Fruits Wins!"),
+                Text::new("Grid: 485 x 300 | First to 15 Fruits Wins!"),
                 TextFont { font_size: FontSize::Px(13.0), ..default() },
                 TextColor(COLOR_TEXT_MUTED),
             ));
