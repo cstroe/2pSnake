@@ -11,6 +11,7 @@ mod input;
 mod game_tick;
 mod hud;
 mod round_over;
+pub mod svg_utils;
 
 use bevy::prelude::*;
 use constants::*;
