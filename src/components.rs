@@ -99,3 +99,6 @@ pub struct RoundOverWinnerText;
 
 #[derive(Component)]
 pub struct RoundOverDetailsText;
+
+#[derive(Component)]
+pub struct BackgroundMusic;

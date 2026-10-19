@@ -12,6 +12,7 @@ mod game_tick;
 mod hud;
 mod round_over;
 pub mod svg_utils;
+mod audio;
 
 use bevy::prelude::*;
 use constants::*;
@@ -27,6 +28,7 @@ use game_tick::*;
 use hud::*;
 use round_over::*;
 use svg_utils::*;
+use audio::*;
 
 fn main() {
     App::new()
@@ -77,7 +79,10 @@ fn main() {
         )
         .add_systems(OnExit(GameState::Countdown), cleanup_countdown_ui)
         // Active Playing State
-        .add_systems(OnEnter(GameState::Playing), setup_hud)
+        .add_systems(
+            OnEnter(GameState::Playing),
+            (setup_hud, start_background_music),
+        )
         .add_systems(
             Update,
             (
@@ -88,6 +93,7 @@ fn main() {
                 update_hud,
             ).run_if(in_state(GameState::Playing)),
         )
+        .add_systems(OnExit(GameState::Playing), stop_background_music)
         // Round Over State
         .add_systems(OnEnter(GameState::RoundOver), setup_round_over_ui)
         .add_systems(
