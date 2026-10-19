@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
-pub const GRID_WIDTH: i32 = 130;
-pub const GRID_HEIGHT: i32 = 80;
+pub const GRID_WIDTH: i32 = 112;
+pub const GRID_HEIGHT: i32 = 70;
 
 pub const INITIAL_SNAKE_LENGTH: usize = 6;
 pub const DEFAULT_TICK_SECONDS: f32 = 0.2; // 200 milliseconds per tick

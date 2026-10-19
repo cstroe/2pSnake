@@ -35,8 +35,8 @@ pub fn spawn_one_fruit(
     rng: &mut impl rand::Rng,
 ) -> Option<Entity> {
     for _ in 0..100 {
-        let x = rng.random_range(6..(GRID_WIDTH - 6));
-        let y = rng.random_range(6..(GRID_HEIGHT - 6));
+        let x = rng.random_range(5..(GRID_WIDTH - 5));
+        let y = rng.random_range(5..(GRID_HEIGHT - 5));
         let cell = IVec2::new(x, y);
 
         if !occupied.contains(&cell) {
