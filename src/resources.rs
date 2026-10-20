@@ -148,5 +148,10 @@ impl Default for NotificationMessage {
     }
 }
 
+#[derive(Resource, Default)]
+pub struct StartMenuState {
+    pub selected_index: usize,
+}
+
 pub use crate::audio::SoundAssets;
 

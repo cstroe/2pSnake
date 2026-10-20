@@ -446,6 +446,19 @@ pub fn handle_controller_select_input(
         }
         next_state.set(GameState::Countdown);
     }
+
+    // 5. Back to Start Screen (Escape or B button)
+    let mut go_back = keys.just_pressed(KeyCode::Escape);
+    for (_, gamepad, _) in &gamepads {
+        if gamepad.just_pressed(GamepadButton::East) {
+            go_back = true;
+            break;
+        }
+    }
+    if go_back {
+        assignments.reset_ready();
+        next_state.set(GameState::StartScreen);
+    }
 }
 
 pub fn cleanup_controller_select_ui(

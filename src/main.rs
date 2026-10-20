@@ -13,6 +13,7 @@ mod hud;
 mod round_over;
 pub mod svg_utils;
 mod audio;
+mod start_screen;
 
 use bevy::prelude::*;
 use constants::*;
@@ -29,6 +30,7 @@ use hud::*;
 use round_over::*;
 use svg_utils::*;
 use audio::*;
+use start_screen::*;
 
 fn main() {
     App::new()
@@ -52,11 +54,33 @@ fn main() {
         .init_resource::<GameWinner>()
         .init_resource::<NotificationMessage>()
         .init_resource::<SpriteAssets>()
+        .init_resource::<StartMenuState>()
         // Game States
         .init_state::<GameState>()
         // Core persistent systems
         .add_systems(Startup, (setup_camera, setup_playfield, setup_svg_sprites, setup_audio))
         .add_systems(Update, (update_arena_layout, draw_arena_borders))
+        // Start Screen State
+        .add_systems(OnEnter(GameState::StartScreen), setup_start_screen_ui)
+        .add_systems(
+            Update,
+            handle_start_screen_input.run_if(in_state(GameState::StartScreen)),
+        )
+        .add_systems(OnExit(GameState::StartScreen), cleanup_start_screen_ui)
+        // Settings State
+        .add_systems(OnEnter(GameState::Settings), setup_settings_ui)
+        .add_systems(
+            Update,
+            handle_settings_input.run_if(in_state(GameState::Settings)),
+        )
+        .add_systems(OnExit(GameState::Settings), cleanup_settings_ui)
+        // Credits State
+        .add_systems(OnEnter(GameState::Credits), setup_credits_ui)
+        .add_systems(
+            Update,
+            handle_credits_input.run_if(in_state(GameState::Credits)),
+        )
+        .add_systems(OnExit(GameState::Credits), cleanup_credits_ui)
         // Controller Selection State
         .add_systems(OnEnter(GameState::ControllerSelect), setup_controller_select_ui)
         .add_systems(

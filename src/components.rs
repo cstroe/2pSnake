@@ -116,3 +116,18 @@ pub struct HudPlayerPepperSlot {
 pub struct HudPlayerBoostText {
     pub player: PlayerId,
 }
+
+#[derive(Component)]
+pub struct StartScreenRoot;
+
+#[derive(Component)]
+pub struct StartMenuItemNode(pub usize);
+
+#[derive(Component)]
+pub struct StartMenuItemText(pub usize);
+
+#[derive(Component)]
+pub struct SettingsScreenRoot;
+
+#[derive(Component)]
+pub struct CreditsScreenRoot;

@@ -4,6 +4,9 @@ use rand::RngExt;
 #[derive(States, Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub enum GameState {
     #[default]
+    StartScreen,
+    Settings,
+    Credits,
     ControllerSelect,
     Countdown,
     Playing,
