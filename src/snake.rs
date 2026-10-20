@@ -102,6 +102,9 @@ pub fn spawn_snake(
         score: 0,
         respawns: 0,
         head_entity,
+        stored_peppers: 0,
+        boost_timer: 0.0,
+        move_timer: 0.0,
     }).id()
 }
 
@@ -138,6 +141,8 @@ pub fn respawn_snake<F: bevy::ecs::query::QueryFilter>(
     }
     snake.body.clear();
     snake.growth_pending = 0;
+    snake.boost_timer = 0.0;
+    snake.move_timer = 0.0;
 
     let mut rng = rand::rng();
 
@@ -234,5 +239,45 @@ pub fn cleanup_snakes(
     }
     for entity in &heads {
         commands.entity(entity).despawn();
+    }
+}
+
+/// Rapid flashing visual effect while a snake has a pepper speed boost active.
+/// Returns head and body segments to normal looks (Color::WHITE) once the boost expires.
+pub fn update_snake_boost_flashing(
+    time: Res<Time>,
+    snakes: Query<&SnakeState>,
+    mut head_sprites: Query<&mut Sprite, (With<SnakeHead>, Without<SnakeSegment>)>,
+    mut segment_sprites: Query<&mut Sprite, (With<SnakeSegment>, Without<SnakeHead>)>,
+) {
+    let t = time.elapsed_secs();
+    // Fast pulsating strobe effect (approx 10 Hz)
+    let flash_phase = (t * 22.0).sin();
+
+    for snake in &snakes {
+        let is_boosted = snake.boost_timer > 0.0;
+
+        let tint = if is_boosted {
+            if flash_phase > 0.0 {
+                // Hot glowing pepper flame tint
+                Color::srgb(2.2, 0.7, 0.1)
+            } else {
+                // Super-charged golden white flash
+                Color::srgb(2.0, 2.0, 0.9)
+            }
+        } else {
+            // Normal looks
+            Color::WHITE
+        };
+
+        if let Ok(mut sprite) = head_sprites.get_mut(snake.head_entity) {
+            sprite.color = tint;
+        }
+
+        for &seg_entity in &snake.segment_entities {
+            if let Ok(mut sprite) = segment_sprites.get_mut(seg_entity) {
+                sprite.color = tint;
+            }
+        }
     }
 }

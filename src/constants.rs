@@ -12,7 +12,7 @@ pub const TICK_STEP: f32 = 0.02;
 pub const INITIAL_ROUND_TIME_SECS: f32 = 300.0; // 5 minutes
 pub const NUM_CONCURRENT_FRUITS: usize = 24;
 
-pub const HUD_HEIGHT_PX: f32 = 64.0;
+pub const HUD_HEIGHT_PX: f32 = 76.0;
 pub const ARENA_PADDING_PX: f32 = 16.0;
 
 // Player 1 theme (Cyan / Neon Blue)

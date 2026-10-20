@@ -5,6 +5,8 @@ use crate::resources::*;
 use crate::components::*;
 
 pub fn handle_gameplay_input(
+    mut commands: Commands,
+    sound_assets: Res<SoundAssets>,
     gamepads: Query<(Entity, &Gamepad)>,
     keys: Res<ButtonInput<KeyCode>>,
     assignments: Res<ControllerAssignments>,
@@ -114,6 +116,63 @@ pub fn handle_gameplay_input(
         if let Some(new_dir) = desired_dir {
             if new_dir != snake.direction.opposite() {
                 snake.next_direction = new_dir;
+            }
+        }
+
+        // 3. Check for A Button / Speed Boost activation
+        let mut boost_requested = false;
+        if let Some(device) = assigned_device {
+            match device {
+                ControllerDevice::Gamepad(target_entity) => {
+                    for (entity, gamepad) in &gamepads {
+                        if entity == *target_entity {
+                            if gamepad.just_pressed(GamepadButton::South) {
+                                boost_requested = true;
+                            }
+                        }
+                    }
+                }
+                ControllerDevice::KeyboardP1 => {
+                    // Space, Left Shift, or KeyE for Player 1
+                    if keys.just_pressed(KeyCode::Space)
+                        || keys.just_pressed(KeyCode::ShiftLeft)
+                        || keys.just_pressed(KeyCode::KeyE)
+                    {
+                        boost_requested = true;
+                    }
+                }
+                ControllerDevice::KeyboardP2 => {
+                    // Enter, Right Shift, Numpad 0, or Slash for Player 2
+                    if keys.just_pressed(KeyCode::Enter)
+                        || keys.just_pressed(KeyCode::ShiftRight)
+                        || keys.just_pressed(KeyCode::Numpad0)
+                        || keys.just_pressed(KeyCode::Slash)
+                    {
+                        boost_requested = true;
+                    }
+                }
+            }
+        }
+
+        if boost_requested {
+            if snake.stored_peppers > 0 {
+                snake.stored_peppers -= 1;
+                snake.boost_timer += 10.0;
+                let player_name = match snake.player {
+                    PlayerId::Player1 => "Player 1",
+                    PlayerId::Player2 => "Player 2",
+                };
+                notification.text = format!(
+                    "{} activated SPEED BOOST! (Active: {:.1}s)",
+                    player_name, snake.boost_timer
+                );
+                notification.timer = Timer::from_seconds(2.0, TimerMode::Once);
+
+                // Play activation sound effect
+                commands.spawn((
+                    AudioPlayer::new(sound_assets.eat_fruit.clone()),
+                    PlaybackSettings::DESPAWN,
+                ));
             }
         }
     }

@@ -33,6 +33,9 @@ pub struct SnakeState {
     pub score: u32,
     pub respawns: u32,
     pub head_entity: Entity,
+    pub stored_peppers: u32,
+    pub boost_timer: f32,
+    pub move_timer: f32,
 }
 
 #[derive(Component)]
@@ -102,3 +105,14 @@ pub struct RoundOverDetailsText;
 
 #[derive(Component)]
 pub struct BackgroundMusic;
+
+#[derive(Component)]
+pub struct HudPlayerPepperSlot {
+    pub player: PlayerId,
+    pub slot_index: usize,
+}
+
+#[derive(Component)]
+pub struct HudPlayerBoostText {
+    pub player: PlayerId,
+}

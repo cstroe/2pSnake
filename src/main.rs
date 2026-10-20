@@ -88,6 +88,7 @@ fn main() {
             (
                 handle_gameplay_input,
                 update_snake_head_visuals,
+                update_snake_boost_flashing,
                 game_clock_tick,
                 animate_fruits,
                 update_hud,

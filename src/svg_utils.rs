@@ -15,6 +15,7 @@ const SVG_FRUIT_GRAPES: &[u8] = include_bytes!("../assets/svg/fruit_grapes.svg")
 const SVG_FRUIT_BANANA: &[u8] = include_bytes!("../assets/svg/fruit_banana.svg");
 const SVG_FRUIT_WATERMELON: &[u8] = include_bytes!("../assets/svg/fruit_watermelon.svg");
 const SVG_FRUIT_STARFRUIT: &[u8] = include_bytes!("../assets/svg/fruit_starfruit.svg");
+const SVG_FRUIT_PEPPER: &[u8] = include_bytes!("../assets/svg/fruit_pepper.svg");
 
 #[derive(Resource, Default, Clone)]
 pub struct SpriteAssets {
@@ -29,6 +30,7 @@ pub struct SpriteAssets {
     pub fruit_banana: Handle<Image>,
     pub fruit_watermelon: Handle<Image>,
     pub fruit_starfruit: Handle<Image>,
+    pub fruit_pepper: Handle<Image>,
 }
 
 impl SpriteAssets {
@@ -41,6 +43,7 @@ impl SpriteAssets {
             FruitType::Banana => self.fruit_banana.clone(),
             FruitType::Watermelon => self.fruit_watermelon.clone(),
             FruitType::Starfruit => self.fruit_starfruit.clone(),
+            FruitType::HotPepper => self.fruit_pepper.clone(),
         }
     }
 }
@@ -124,6 +127,10 @@ pub fn setup_svg_sprites(
         .map(|img| images.add(img))
         .unwrap_or_default();
 
+    let fruit_pepper = render_svg_to_image(SVG_FRUIT_PEPPER, tex_res, tex_res)
+        .map(|img| images.add(img))
+        .unwrap_or_default();
+
     commands.insert_resource(SpriteAssets {
         p1_head,
         p1_body,
@@ -136,5 +143,6 @@ pub fn setup_svg_sprites(
         fruit_banana,
         fruit_watermelon,
         fruit_starfruit,
+        fruit_pepper,
     });
 }

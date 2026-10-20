@@ -72,19 +72,21 @@ pub enum FruitType {
     Banana,
     Watermelon,
     Starfruit,
+    HotPepper,
 }
 
 impl FruitType {
     pub fn random() -> Self {
         let mut rng = rand::rng();
-        match rng.random_range(0..7) {
+        match rng.random_range(0..8) {
             0 => FruitType::Apple,
             1 => FruitType::Strawberry,
             2 => FruitType::Orange,
             3 => FruitType::Grapes,
             4 => FruitType::Banana,
             5 => FruitType::Watermelon,
-            _ => FruitType::Starfruit,
+            6 => FruitType::Starfruit,
+            _ => FruitType::HotPepper,
         }
     }
 
@@ -97,6 +99,7 @@ impl FruitType {
             FruitType::Banana => 2,
             FruitType::Watermelon => 3,
             FruitType::Starfruit => 4,
+            FruitType::HotPepper => 3,
         }
     }
 
@@ -109,6 +112,7 @@ impl FruitType {
             FruitType::Banana => 4,
             FruitType::Watermelon => 5,
             FruitType::Starfruit => 6,
+            FruitType::HotPepper => 2,
         }
     }
 
@@ -121,6 +125,7 @@ impl FruitType {
             FruitType::Banana => Color::srgb(1.0, 0.9, 0.1),      // Neon Yellow
             FruitType::Watermelon => Color::srgb(0.1, 0.9, 0.4),  // Neon Green
             FruitType::Starfruit => Color::srgb(1.0, 1.0, 0.4),   // Radiant Gold
+            FruitType::HotPepper => Color::srgb(1.0, 0.25, 0.0),  // Fiery Pepper Red
         }
     }
 
@@ -133,6 +138,7 @@ impl FruitType {
             FruitType::Banana => "Banana",
             FruitType::Watermelon => "Watermelon",
             FruitType::Starfruit => "Starfruit",
+            FruitType::HotPepper => "Hot Pepper",
         }
     }
 }

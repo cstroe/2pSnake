@@ -55,11 +55,8 @@ pub fn game_clock_tick(
         return;
     }
 
-    // 3. Tick game movement clock
-    game_clock.tick_timer.tick(time.delta());
-    if !game_clock.tick_timer.just_finished() {
-        return;
-    }
+    // 3. Tick per-snake movement and boost timers
+    let dt = time.delta_secs();
 
     // Separate Player 1 and Player 2 explicitly so both can be borrowed independently
     let mut p1_opt = None;
@@ -75,37 +72,96 @@ pub fn game_clock_tick(
         return;
     };
 
+    // Decrement boost timers
+    p1.boost_timer = (p1.boost_timer - dt).max(0.0);
+    p2.boost_timer = (p2.boost_timer - dt).max(0.0);
+
+    // Decrement move timers
+    p1.move_timer -= dt;
+    p2.move_timer -= dt;
+
+    let p1_ready = p1.move_timer <= 0.0;
+    let p2_ready = p2.move_timer <= 0.0;
+
+    if !p1_ready && !p2_ready {
+        return;
+    }
+
+    // Reset move timers for whichever snakes are stepping
+    if p1_ready {
+        let p1_step_interval = if p1.boost_timer > 0.0 {
+            game_clock.tick_duration * 0.5
+        } else {
+            game_clock.tick_duration
+        };
+        p1.move_timer = p1_step_interval;
+    }
+
+    if p2_ready {
+        let p2_step_interval = if p2.boost_timer > 0.0 {
+            game_clock.tick_duration * 0.5
+        } else {
+            game_clock.tick_duration
+        };
+        p2.move_timer = p2_step_interval;
+    }
+
     let p1_head = p1.body[0];
     let p2_head = p2.body[0];
 
     let p1_next = p1_head + p1.next_direction.to_ivec2();
     let p2_next = p2_head + p2.next_direction.to_ivec2();
 
-    // Check bounds / wall hits
-    let p1_wall = p1_next.x < 0 || p1_next.x >= GRID_WIDTH || p1_next.y < 0 || p1_next.y >= GRID_HEIGHT;
-    let p2_wall = p2_next.x < 0 || p2_next.x >= GRID_WIDTH || p2_next.y < 0 || p2_next.y >= GRID_HEIGHT;
+    // Collision detection depending on which snakes are stepping
+    let mut p1_dies = false;
+    let mut p2_dies = false;
 
-    // Check self collisions (ignore tail if moving away)
-    let p1_body_len = p1.body.len();
-    let p1_check_len = if p1.growth_pending == 0 && p1_body_len > 1 { p1_body_len - 1 } else { p1_body_len };
-    let p1_self = p1.body.iter().take(p1_check_len).any(|&c| c == p1_next);
+    if p1_ready && p2_ready {
+        // Both stepping simultaneously
+        let p1_wall = p1_next.x < 0 || p1_next.x >= GRID_WIDTH || p1_next.y < 0 || p1_next.y >= GRID_HEIGHT;
+        let p2_wall = p2_next.x < 0 || p2_next.x >= GRID_WIDTH || p2_next.y < 0 || p2_next.y >= GRID_HEIGHT;
 
-    let p2_body_len = p2.body.len();
-    let p2_check_len = if p2.growth_pending == 0 && p2_body_len > 1 { p2_body_len - 1 } else { p2_body_len };
-    let p2_self = p2.body.iter().take(p2_check_len).any(|&c| c == p2_next);
+        let p1_body_len = p1.body.len();
+        let p1_check_len = if p1.growth_pending == 0 && p1_body_len > 1 { p1_body_len - 1 } else { p1_body_len };
+        let p1_self = p1.body.iter().take(p1_check_len).any(|&c| c == p1_next);
 
-    // Check opponent collisions
-    let p1_hits_p2 = p2.body.iter().any(|&c| c == p1_next);
-    let p2_hits_p1 = p1.body.iter().any(|&c| c == p2_next);
+        let p2_body_len = p2.body.len();
+        let p2_check_len = if p2.growth_pending == 0 && p2_body_len > 1 { p2_body_len - 1 } else { p2_body_len };
+        let p2_self = p2.body.iter().take(p2_check_len).any(|&c| c == p2_next);
 
-    // Head-to-head collision
-    let head_on = p1_next == p2_next;
+        let p1_hits_p2 = p2.body.iter().any(|&c| c == p1_next);
+        let p2_hits_p1 = p1.body.iter().any(|&c| c == p2_next);
 
-    let p1_dies = p1_wall || p1_self || p1_hits_p2 || head_on;
-    let p2_dies = p2_wall || p2_self || p2_hits_p1 || head_on;
+        let head_on = p1_next == p2_next;
+
+        p1_dies = p1_wall || p1_self || p1_hits_p2 || head_on;
+        p2_dies = p2_wall || p2_self || p2_hits_p1 || head_on;
+    } else if p1_ready {
+        // Only Player 1 stepping
+        let p1_wall = p1_next.x < 0 || p1_next.x >= GRID_WIDTH || p1_next.y < 0 || p1_next.y >= GRID_HEIGHT;
+
+        let p1_body_len = p1.body.len();
+        let p1_check_len = if p1.growth_pending == 0 && p1_body_len > 1 { p1_body_len - 1 } else { p1_body_len };
+        let p1_self = p1.body.iter().take(p1_check_len).any(|&c| c == p1_next);
+
+        let p1_hits_p2 = p2.body.iter().any(|&c| c == p1_next);
+
+        p1_dies = p1_wall || p1_self || p1_hits_p2;
+    } else if p2_ready {
+        // Only Player 2 stepping
+        let p2_wall = p2_next.x < 0 || p2_next.x >= GRID_WIDTH || p2_next.y < 0 || p2_next.y >= GRID_HEIGHT;
+
+        let p2_body_len = p2.body.len();
+        let p2_check_len = if p2.growth_pending == 0 && p2_body_len > 1 { p2_body_len - 1 } else { p2_body_len };
+        let p2_self = p2.body.iter().take(p2_check_len).any(|&c| c == p2_next);
+
+        let p2_hits_p1 = p1.body.iter().any(|&c| c == p2_next);
+
+        p2_dies = p2_wall || p2_self || p2_hits_p1;
+    }
 
     // Handle Player 1 Death / Respawn
-    if p1_dies {
+    if p1_ready && p1_dies {
         let p2_body_copy = p2.body.clone();
         respawn_snake(
             &mut commands,
@@ -120,7 +176,7 @@ pub fn game_clock_tick(
     }
 
     // Handle Player 2 Death / Respawn
-    if p2_dies {
+    if p2_ready && p2_dies {
         let p1_body_copy = p1.body.clone();
         respawn_snake(
             &mut commands,
@@ -138,8 +194,8 @@ pub fn game_clock_tick(
     let fruits: Vec<(Entity, IVec2, FruitType)> = fruits_query.iter().map(|(e, f)| (e, f.cell, f.fruit_type)).collect();
 
     // Move surviving snakes
-    // 1. Move Player 1 if alive
-    if !p1_dies {
+    // 1. Move Player 1 if alive and was ready
+    if p1_ready && !p1_dies {
         p1.direction = p1.next_direction;
         let old_head = p1.body[0];
 
@@ -157,7 +213,17 @@ pub fn game_clock_tick(
             p1.growth_pending += fruit_type.growth();
             commands.entity(fruit_entity).despawn();
 
-            notification.text = format!("P1 ate {}! (+{} length)", fruit_type.name(), fruit_type.growth());
+            if fruit_type == FruitType::HotPepper {
+                let old_peppers = p1.stored_peppers;
+                p1.stored_peppers = (p1.stored_peppers + 1).min(3);
+                if p1.stored_peppers > old_peppers {
+                    notification.text = format!("P1 collected a Hot Pepper! ({}/3 stored - Press A to BOOST!)", p1.stored_peppers);
+                } else {
+                    notification.text = "P1 ate a Hot Pepper! (Stored: 3/3 Max)".to_string();
+                }
+            } else {
+                notification.text = format!("P1 ate {}! (+{} length)", fruit_type.name(), fruit_type.growth());
+            }
             notification.timer = Timer::from_seconds(2.5, TimerMode::Once);
 
             let mut occupied: Vec<IVec2> = p1.body.iter().chain(p2.body.iter()).copied().collect();
@@ -205,8 +271,8 @@ pub fn game_clock_tick(
         }
     }
 
-    // 2. Move Player 2 if alive
-    if !p2_dies {
+    // 2. Move Player 2 if alive and was ready
+    if p2_ready && !p2_dies {
         p2.direction = p2.next_direction;
         let old_head = p2.body[0];
 
@@ -224,7 +290,17 @@ pub fn game_clock_tick(
             p2.growth_pending += fruit_type.growth();
             commands.entity(fruit_entity).despawn();
 
-            notification.text = format!("P2 ate {}! (+{} length)", fruit_type.name(), fruit_type.growth());
+            if fruit_type == FruitType::HotPepper {
+                let old_peppers = p2.stored_peppers;
+                p2.stored_peppers = (p2.stored_peppers + 1).min(3);
+                if p2.stored_peppers > old_peppers {
+                    notification.text = format!("P2 collected a Hot Pepper! ({}/3 stored - Press A to BOOST!)", p2.stored_peppers);
+                } else {
+                    notification.text = "P2 ate a Hot Pepper! (Stored: 3/3 Max)".to_string();
+                }
+            } else {
+                notification.text = format!("P2 ate {}! (+{} length)", fruit_type.name(), fruit_type.growth());
+            }
             notification.timer = Timer::from_seconds(2.5, TimerMode::Once);
 
             let mut occupied: Vec<IVec2> = p1.body.iter().chain(p2.body.iter()).copied().collect();
