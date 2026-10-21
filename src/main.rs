@@ -112,8 +112,8 @@ fn main() {
             (
                 handle_gameplay_input,
                 update_snake_head_visuals,
-                update_snake_boost_flashing,
                 game_clock_tick,
+                update_snake_boost_flashing,
                 animate_fruits,
                 update_hud,
             ).run_if(in_state(GameState::Playing)),

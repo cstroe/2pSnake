@@ -77,12 +77,58 @@ pub fn game_clock_tick(
     p1.boost_timer = (p1.boost_timer - dt).max(0.0);
     p2.boost_timer = (p2.boost_timer - dt).max(0.0);
 
-    // Decrement move timers
-    p1.move_timer -= dt;
-    p2.move_timer -= dt;
+    let mut p1_just_respawned = false;
+    let mut p2_just_respawned = false;
 
-    let p1_ready = p1.move_timer <= 0.0;
-    let p2_ready = p2.move_timer <= 0.0;
+    // Handle dying snakes and respawn after the 1-second transition finishes
+    if p1.death_timer > 0.0 {
+        p1.death_timer = (p1.death_timer - dt).max(0.0);
+        if p1.death_timer == 0.0 {
+            let p2_body_copy = p2.body.clone();
+            respawn_snake(
+                &mut commands,
+                &layout,
+                &sprites,
+                &mut p1,
+                &[&p2_body_copy],
+                &mut head_transforms,
+                game_clock.tick_duration,
+            );
+            p1_just_respawned = true;
+            notification.text = "Player 1 respawned!".to_string();
+            notification.timer = Timer::from_seconds(2.0, TimerMode::Once);
+        }
+    }
+
+    if p2.death_timer > 0.0 {
+        p2.death_timer = (p2.death_timer - dt).max(0.0);
+        if p2.death_timer == 0.0 {
+            let p1_body_copy = p1.body.clone();
+            respawn_snake(
+                &mut commands,
+                &layout,
+                &sprites,
+                &mut p2,
+                &[&p1_body_copy],
+                &mut head_transforms,
+                game_clock.tick_duration,
+            );
+            p2_just_respawned = true;
+            notification.text = "Player 2 respawned!".to_string();
+            notification.timer = Timer::from_seconds(2.0, TimerMode::Once);
+        }
+    }
+
+    // Decrement move timers for living snakes that did not just respawn on this frame
+    if p1.death_timer == 0.0 && !p1_just_respawned {
+        p1.move_timer -= dt;
+    }
+    if p2.death_timer == 0.0 && !p2_just_respawned {
+        p2.move_timer -= dt;
+    }
+
+    let p1_ready = p1.death_timer == 0.0 && !p1_just_respawned && p1.move_timer <= 0.0;
+    let p2_ready = p2.death_timer == 0.0 && !p2_just_respawned && p2.move_timer <= 0.0;
 
     if !p1_ready && !p2_ready {
         return;
@@ -145,7 +191,7 @@ pub fn game_clock_tick(
         let p1_check_len = if p1.growth_pending == 0 && p1_body_len > 1 { p1_body_len - 1 } else { p1_body_len };
         let p1_self = p1.body.iter().take(p1_check_len).any(|&c| c == p1_next);
 
-        let p1_hits_p2 = p2.body.iter().any(|&c| c == p1_next);
+        let p1_hits_p2 = p2.death_timer == 0.0 && p2.body.iter().any(|&c| c == p1_next);
 
         p1_dies = p1_wall || p1_self || p1_hits_p2;
     } else if p2_ready {
@@ -156,39 +202,25 @@ pub fn game_clock_tick(
         let p2_check_len = if p2.growth_pending == 0 && p2_body_len > 1 { p2_body_len - 1 } else { p2_body_len };
         let p2_self = p2.body.iter().take(p2_check_len).any(|&c| c == p2_next);
 
-        let p2_hits_p1 = p1.body.iter().any(|&c| c == p2_next);
+        let p2_hits_p1 = p1.death_timer == 0.0 && p1.body.iter().any(|&c| c == p2_next);
 
         p2_dies = p2_wall || p2_self || p2_hits_p1;
     }
 
-    // Handle Player 1 Death / Respawn
+    // Handle Player 1 Death (starts 1.0s transition: stop, turn grey, fade out, then respawn)
     if p1_ready && p1_dies {
-        let p2_body_copy = p2.body.clone();
-        respawn_snake(
-            &mut commands,
-            &layout,
-            &sprites,
-            &mut p1,
-            &[&p2_body_copy],
-            &mut head_transforms,
-        );
-        notification.text = "Player 1 died and respawned!".to_string();
-        notification.timer = Timer::from_seconds(2.5, TimerMode::Once);
+        p1.death_timer = 1.0;
+        p1.boost_timer = 0.0;
+        notification.text = "Player 1 died!".to_string();
+        notification.timer = Timer::from_seconds(1.5, TimerMode::Once);
     }
 
-    // Handle Player 2 Death / Respawn
+    // Handle Player 2 Death (starts 1.0s transition: stop, turn grey, fade out, then respawn)
     if p2_ready && p2_dies {
-        let p1_body_copy = p1.body.clone();
-        respawn_snake(
-            &mut commands,
-            &layout,
-            &sprites,
-            &mut p2,
-            &[&p1_body_copy],
-            &mut head_transforms,
-        );
-        notification.text = "Player 2 died and respawned!".to_string();
-        notification.timer = Timer::from_seconds(2.5, TimerMode::Once);
+        p2.death_timer = 1.0;
+        p2.boost_timer = 0.0;
+        notification.text = "Player 2 died!".to_string();
+        notification.timer = Timer::from_seconds(1.5, TimerMode::Once);
     }
 
     // Collect fruits for lookup
@@ -268,6 +300,8 @@ pub fn game_clock_tick(
             if let Some(tail_entity) = p1.segment_entities.pop_back() {
                 if let Ok(mut transform) = segment_transforms.get_mut(tail_entity) {
                     transform.translation = layout.grid_to_world(old_head).extend(1.0);
+                } else {
+                    commands.entity(tail_entity).insert(Transform::from_translation(layout.grid_to_world(old_head).extend(1.0)));
                 }
                 p1.segment_entities.push_front(tail_entity);
             }
@@ -352,6 +386,8 @@ pub fn game_clock_tick(
             if let Some(tail_entity) = p2.segment_entities.pop_back() {
                 if let Ok(mut transform) = segment_transforms.get_mut(tail_entity) {
                     transform.translation = layout.grid_to_world(old_head).extend(1.0);
+                } else {
+                    commands.entity(tail_entity).insert(Transform::from_translation(layout.grid_to_world(old_head).extend(1.0)));
                 }
                 p2.segment_entities.push_front(tail_entity);
             }

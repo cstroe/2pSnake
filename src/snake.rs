@@ -104,7 +104,8 @@ pub fn spawn_snake(
         head_entity,
         stored_peppers: 0,
         boost_timer: 0.0,
-        move_timer: 0.0,
+        move_timer: DEFAULT_TICK_SECONDS,
+        death_timer: 0.0,
     }).id()
 }
 
@@ -118,6 +119,9 @@ pub fn update_snake_head_visuals(
     mut head_transforms: Query<&mut Transform, With<SnakeHead>>,
 ) {
     for snake in &snakes {
+        if snake.death_timer > 0.0 {
+            continue;
+        }
         if let Ok(mut transform) = head_transforms.get_mut(snake.head_entity) {
             transform.rotation = Quat::from_rotation_z(snake.next_direction.angle());
         }
@@ -132,6 +136,7 @@ pub fn respawn_snake<F: bevy::ecs::query::QueryFilter>(
     snake: &mut SnakeState,
     other_snakes_bodies: &[&VecDeque<IVec2>],
     head_transforms: &mut Query<&mut Transform, F>,
+    step_interval: f32,
 ) {
     snake.respawns += 1;
 
@@ -142,7 +147,10 @@ pub fn respawn_snake<F: bevy::ecs::query::QueryFilter>(
     snake.body.clear();
     snake.growth_pending = 0;
     snake.boost_timer = 0.0;
-    snake.move_timer = 0.0;
+    // Set move_timer to a full step interval so the snake pauses upon respawning,
+    // ensuring all newly spawned segment entities are fully initialized in the ECS world.
+    snake.move_timer = step_interval;
+    snake.death_timer = 0.0;
 
     let mut rng = rand::rng();
 
@@ -161,17 +169,35 @@ pub fn respawn_snake<F: bevy::ecs::query::QueryFilter>(
         let dirs = [Direction::Right, Direction::Left, Direction::Up, Direction::Down];
         let dir = dirs[rng.random_range(0..4)];
 
-        // Check clearance for candidate and 6 cells in direction
+        // Check clearance for candidate, trailing body cells, and forward path
         let mut clear = true;
         for step in 0..INITIAL_SNAKE_LENGTH as i32 {
-            let check_cell = candidate + dir.to_ivec2() * step;
-            if check_cell.x < 3 || check_cell.x >= GRID_WIDTH - 3 || check_cell.y < 3 || check_cell.y >= GRID_HEIGHT - 3 {
+            // Check trailing body cells (where the body segments will spawn)
+            let seg_cell = candidate + dir.opposite().to_ivec2() * step;
+            if seg_cell.x < 3 || seg_cell.x >= GRID_WIDTH - 3 || seg_cell.y < 3 || seg_cell.y >= GRID_HEIGHT - 3 {
                 clear = false;
                 break;
             }
 
             for other_body in other_snakes_bodies {
-                if other_body.contains(&check_cell) {
+                if other_body.contains(&seg_cell) {
+                    clear = false;
+                    break;
+                }
+            }
+            if !clear {
+                break;
+            }
+
+            // Check forward path cells (where the snake will move)
+            let fwd_cell = candidate + dir.to_ivec2() * step;
+            if fwd_cell.x < 3 || fwd_cell.x >= GRID_WIDTH - 3 || fwd_cell.y < 3 || fwd_cell.y >= GRID_HEIGHT - 3 {
+                clear = false;
+                break;
+            }
+
+            for other_body in other_snakes_bodies {
+                if other_body.contains(&fwd_cell) {
                     clear = false;
                     break;
                 }
@@ -242,10 +268,13 @@ pub fn cleanup_snakes(
     }
 }
 
-/// Rapid flashing visual effect while a snake has a pepper speed boost active.
-/// Returns head and body segments to normal looks (Color::WHITE) once the boost expires.
+/// Visual effects for snakes:
+/// - Death transition: 1.0 second total duration (stops moving, turns grey, fades out to 0 alpha, then respawns).
+/// - Pepper speed boost: Rapid flashing strobe effect (approx 10 Hz) while active.
+/// - Normal: Resets head and body segments to normal color textures and Color::WHITE.
 pub fn update_snake_boost_flashing(
     time: Res<Time>,
+    sprites: Res<SpriteAssets>,
     snakes: Query<&SnakeState>,
     mut head_sprites: Query<&mut Sprite, (With<SnakeHead>, Without<SnakeSegment>)>,
     mut segment_sprites: Query<&mut Sprite, (With<SnakeSegment>, Without<SnakeHead>)>,
@@ -255,28 +284,69 @@ pub fn update_snake_boost_flashing(
     let flash_phase = (t * 22.0).sin();
 
     for snake in &snakes {
-        let is_boosted = snake.boost_timer > 0.0;
+        if snake.death_timer > 0.0 {
+            // Death transition (1.0 second total duration):
+            // 1. Snake stops moving (handled in game_tick / input)
+            // 2. Turns grey (0.2s - 0.5s)
+            // 3. Fades out to 0 alpha (0.5s - 1.0s)
+            // 4. Respawns at 1.0s (handled in game_tick)
+            let elapsed = (1.0 - snake.death_timer).clamp(0.0, 1.0);
+            let is_gray = elapsed >= 0.2;
 
-        let tint = if is_boosted {
-            if flash_phase > 0.0 {
-                // Hot glowing pepper flame tint
-                Color::srgb(2.2, 0.7, 0.1)
+            let alpha = if elapsed >= 0.5 {
+                ((1.0 - elapsed) / 0.5).clamp(0.0, 1.0)
             } else {
-                // Super-charged golden white flash
-                Color::srgb(2.0, 2.0, 0.9)
+                1.0
+            };
+
+            let head_img = sprites.snake_head(snake.player, is_gray);
+            let body_img = sprites.snake_body(snake.player, is_gray);
+            let tint = if is_gray {
+                Color::srgba(0.85, 0.85, 0.85, alpha)
+            } else {
+                Color::srgba(1.0, 1.0, 1.0, alpha)
+            };
+
+            if let Ok(mut sprite) = head_sprites.get_mut(snake.head_entity) {
+                sprite.image = head_img;
+                sprite.color = tint;
+            }
+
+            for &seg_entity in &snake.segment_entities {
+                if let Ok(mut sprite) = segment_sprites.get_mut(seg_entity) {
+                    sprite.image = body_img.clone();
+                    sprite.color = tint;
+                }
             }
         } else {
-            // Normal looks
-            Color::WHITE
-        };
+            let is_boosted = snake.boost_timer > 0.0;
 
-        if let Ok(mut sprite) = head_sprites.get_mut(snake.head_entity) {
-            sprite.color = tint;
-        }
+            let tint = if is_boosted {
+                if flash_phase > 0.0 {
+                    // Hot glowing pepper flame tint
+                    Color::srgb(2.2, 0.7, 0.1)
+                } else {
+                    // Super-charged golden white flash
+                    Color::srgb(2.0, 2.0, 0.9)
+                }
+            } else {
+                // Normal looks
+                Color::WHITE
+            };
 
-        for &seg_entity in &snake.segment_entities {
-            if let Ok(mut sprite) = segment_sprites.get_mut(seg_entity) {
+            let head_img = sprites.snake_head(snake.player, false);
+            let body_img = sprites.snake_body(snake.player, false);
+
+            if let Ok(mut sprite) = head_sprites.get_mut(snake.head_entity) {
+                sprite.image = head_img;
                 sprite.color = tint;
+            }
+
+            for &seg_entity in &snake.segment_entities {
+                if let Ok(mut sprite) = segment_sprites.get_mut(seg_entity) {
+                    sprite.image = body_img.clone();
+                    sprite.color = tint;
+                }
             }
         }
     }

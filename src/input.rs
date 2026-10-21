@@ -42,6 +42,10 @@ pub fn handle_gameplay_input(
 
     // 2. Snake direction input for each snake
     for mut snake in &mut snakes {
+        if snake.death_timer > 0.0 {
+            continue;
+        }
+
         let assigned_device = match snake.player {
             PlayerId::Player1 => assignments.p1_device.as_ref(),
             PlayerId::Player2 => assignments.p2_device.as_ref(),

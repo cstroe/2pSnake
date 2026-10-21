@@ -23,6 +23,10 @@ pub struct SpriteAssets {
     pub p1_body: Handle<Image>,
     pub p2_head: Handle<Image>,
     pub p2_body: Handle<Image>,
+    pub p1_head_gray: Handle<Image>,
+    pub p1_body_gray: Handle<Image>,
+    pub p2_head_gray: Handle<Image>,
+    pub p2_body_gray: Handle<Image>,
     pub fruit_apple: Handle<Image>,
     pub fruit_strawberry: Handle<Image>,
     pub fruit_orange: Handle<Image>,
@@ -34,6 +38,24 @@ pub struct SpriteAssets {
 }
 
 impl SpriteAssets {
+    pub fn snake_head(&self, player: PlayerId, is_gray: bool) -> Handle<Image> {
+        match (player, is_gray) {
+            (PlayerId::Player1, false) => self.p1_head.clone(),
+            (PlayerId::Player1, true) => self.p1_head_gray.clone(),
+            (PlayerId::Player2, false) => self.p2_head.clone(),
+            (PlayerId::Player2, true) => self.p2_head_gray.clone(),
+        }
+    }
+
+    pub fn snake_body(&self, player: PlayerId, is_gray: bool) -> Handle<Image> {
+        match (player, is_gray) {
+            (PlayerId::Player1, false) => self.p1_body.clone(),
+            (PlayerId::Player1, true) => self.p1_body_gray.clone(),
+            (PlayerId::Player2, false) => self.p2_body.clone(),
+            (PlayerId::Player2, true) => self.p2_body_gray.clone(),
+        }
+    }
+
     pub fn fruit_handle(&self, fruit_type: FruitType) -> Handle<Image> {
         match fruit_type {
             FruitType::Apple => self.fruit_apple.clone(),
@@ -76,6 +98,44 @@ pub fn render_svg_to_image(svg_data: &[u8], width: u32, height: u32) -> Result<I
     ))
 }
 
+pub fn render_svg_to_grayscale_image(svg_data: &[u8], width: u32, height: u32) -> Result<Image, String> {
+    let opt = Options::default();
+    let tree = Tree::from_data(svg_data, &opt).map_err(|e| e.to_string())?;
+
+    let mut pixmap = Pixmap::new(width, height)
+        .ok_or_else(|| "Failed to allocate pixmap".to_string())?;
+
+    let sx = width as f32 / tree.size().width();
+    let sy = height as f32 / tree.size().height();
+    let transform = Transform::from_scale(sx, sy);
+
+    resvg::render(&tree, transform, &mut pixmap.as_mut());
+
+    for pixel in pixmap.data_mut().chunks_exact_mut(4) {
+        let r = pixel[0] as f32;
+        let g = pixel[1] as f32;
+        let b = pixel[2] as f32;
+        let gray = (0.299 * r + 0.587 * g + 0.114 * b).round().clamp(0.0, 255.0) as u8;
+        pixel[0] = gray;
+        pixel[1] = gray;
+        pixel[2] = gray;
+    }
+
+    let size = Extent3d {
+        width,
+        height,
+        depth_or_array_layers: 1,
+    };
+
+    Ok(Image::new(
+        size,
+        TextureDimension::D2,
+        pixmap.take(),
+        TextureFormat::Rgba8UnormSrgb,
+        bevy::asset::RenderAssetUsages::default(),
+    ))
+}
+
 pub fn setup_svg_sprites(
     mut commands: Commands,
     mut images: ResMut<Assets<Image>>,
@@ -96,6 +156,22 @@ pub fn setup_svg_sprites(
         .unwrap_or_default();
 
     let p2_body = render_svg_to_image(SVG_SNAKE_BODY_P2, tex_res, tex_res)
+        .map(|img| images.add(img))
+        .unwrap_or_default();
+
+    let p1_head_gray = render_svg_to_grayscale_image(SVG_SNAKE_HEAD_P1, tex_res, tex_res)
+        .map(|img| images.add(img))
+        .unwrap_or_default();
+
+    let p1_body_gray = render_svg_to_grayscale_image(SVG_SNAKE_BODY_P1, tex_res, tex_res)
+        .map(|img| images.add(img))
+        .unwrap_or_default();
+
+    let p2_head_gray = render_svg_to_grayscale_image(SVG_SNAKE_HEAD_P2, tex_res, tex_res)
+        .map(|img| images.add(img))
+        .unwrap_or_default();
+
+    let p2_body_gray = render_svg_to_grayscale_image(SVG_SNAKE_BODY_P2, tex_res, tex_res)
         .map(|img| images.add(img))
         .unwrap_or_default();
 
@@ -136,6 +212,10 @@ pub fn setup_svg_sprites(
         p1_body,
         p2_head,
         p2_body,
+        p1_head_gray,
+        p1_body_gray,
+        p2_head_gray,
+        p2_body_gray,
         fruit_apple,
         fruit_strawberry,
         fruit_orange,

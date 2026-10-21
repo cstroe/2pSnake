@@ -36,6 +36,7 @@ pub struct SnakeState {
     pub stored_peppers: u32,
     pub boost_timer: f32,
     pub move_timer: f32,
+    pub death_timer: f32,
 }
 
 #[derive(Component)]
