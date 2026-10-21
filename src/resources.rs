@@ -22,7 +22,7 @@ impl Default for ArenaLayout {
 }
 
 impl ArenaLayout {
-    /// Convert grid coordinate (0..112, 0..70) to 2D world space coordinates
+    /// Convert grid coordinate (0..100, 0..62) to 2D world space coordinates
     pub fn grid_to_world(&self, cell: IVec2) -> Vec2 {
         self.grid_origin + Vec2::new(
             (cell.x as f32 + 0.5) * self.cell_size,

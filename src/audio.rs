@@ -1,14 +1,29 @@
 use bevy::prelude::*;
 use bevy::audio::Volume;
 use crate::components::BackgroundMusic;
+use crate::types::FruitType;
 
 const SFX_POWERUP_WAV: &[u8] = include_bytes!("../assets/sound/SFX_Powerup_01.wav");
+const SFX_COIN_WAV: &[u8] = include_bytes!("../assets/sound/coin.wav");
 const MUSIC_FASTSONG_MP3: &[u8] = include_bytes!("../assets/music/fastsong.mp3");
 
 #[derive(Resource, Clone)]
 pub struct SoundAssets {
-    pub eat_fruit: Handle<AudioSource>,
+    pub coin: Handle<AudioSource>,
+    pub powerup: Handle<AudioSource>,
     pub background_music: Handle<AudioSource>,
+}
+
+impl SoundAssets {
+    /// Return the appropriate sound effect for a collected fruit:
+    /// "coin.wav" for all normal fruits, "SFX_Powerup_01.wav" for Hot Pepper.
+    pub fn fruit_sound(&self, fruit_type: FruitType) -> Handle<AudioSource> {
+        if fruit_type == FruitType::HotPepper {
+            self.powerup.clone()
+        } else {
+            self.coin.clone()
+        }
+    }
 }
 
 pub fn setup_audio(
@@ -16,11 +31,19 @@ pub fn setup_audio(
     asset_server: Res<AssetServer>,
     mut audio_assets: ResMut<Assets<AudioSource>>,
 ) {
-    let eat_fruit = if std::path::Path::new("assets/sound/SFX_Powerup_01.wav").exists() {
+    let powerup = if std::path::Path::new("assets/sound/SFX_Powerup_01.wav").exists() {
         asset_server.load("sound/SFX_Powerup_01.wav")
     } else {
         audio_assets.add(AudioSource {
             bytes: SFX_POWERUP_WAV.into(),
+        })
+    };
+
+    let coin = if std::path::Path::new("assets/sound/coin.wav").exists() {
+        asset_server.load("sound/coin.wav")
+    } else {
+        audio_assets.add(AudioSource {
+            bytes: SFX_COIN_WAV.into(),
         })
     };
 
@@ -33,7 +56,8 @@ pub fn setup_audio(
     };
 
     commands.insert_resource(SoundAssets {
-        eat_fruit,
+        coin,
+        powerup,
         background_music,
     });
 }

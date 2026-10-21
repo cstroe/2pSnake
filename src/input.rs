@@ -170,7 +170,7 @@ pub fn handle_gameplay_input(
 
                 // Play activation sound effect
                 commands.spawn((
-                    AudioPlayer::new(sound_assets.eat_fruit.clone()),
+                    AudioPlayer::new(sound_assets.powerup.clone()),
                     PlaybackSettings::DESPAWN,
                 ));
             }

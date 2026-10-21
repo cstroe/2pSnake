@@ -140,7 +140,7 @@ pub fn setup_hud(
 
             center.spawn((
                 HudMessageText,
-                Text::new("Grid: 112 x 70 | Collect unlimited fruits until time expires!"),
+                Text::new("Grid: 100 x 62 | Collect unlimited fruits until time expires!"),
                 TextFont { font_size: FontSize::Px(13.0), ..default() },
                 TextColor(COLOR_TEXT_MUTED),
             ));

@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy::audio::Volume;
 use crate::constants::*;
 use crate::types::*;
 use crate::resources::*;
@@ -230,10 +231,17 @@ pub fn game_clock_tick(
             let mut rng = rand::rng();
             spawn_one_fruit(&mut commands, &layout, &sprites, &mut occupied, 0.0, &mut rng);
 
-            // Play fruit eating sound effect
+            // Play fruit eating sound effect:
+            // "coin.wav" for normal fruits, "SFX_Powerup_01.wav" for Hot Pepper
+            let sound = sound_assets.fruit_sound(fruit_type);
+            let volume = if fruit_type == FruitType::HotPepper {
+                Volume::Linear(1.0)
+            } else {
+                Volume::Linear(1.4)
+            };
             commands.spawn((
-                AudioPlayer::new(sound_assets.eat_fruit.clone()),
-                PlaybackSettings::DESPAWN,
+                AudioPlayer::new(sound),
+                PlaybackSettings::DESPAWN.with_volume(volume),
             ));
         }
 
@@ -307,10 +315,17 @@ pub fn game_clock_tick(
             let mut rng = rand::rng();
             spawn_one_fruit(&mut commands, &layout, &sprites, &mut occupied, 0.0, &mut rng);
 
-            // Play fruit eating sound effect
+            // Play fruit eating sound effect:
+            // "coin.wav" for normal fruits, "SFX_Powerup_01.wav" for Hot Pepper
+            let sound = sound_assets.fruit_sound(fruit_type);
+            let volume = if fruit_type == FruitType::HotPepper {
+                Volume::Linear(1.0)
+            } else {
+                Volume::Linear(1.4)
+            };
             commands.spawn((
-                AudioPlayer::new(sound_assets.eat_fruit.clone()),
-                PlaybackSettings::DESPAWN,
+                AudioPlayer::new(sound),
+                PlaybackSettings::DESPAWN.with_volume(volume),
             ));
         }
 

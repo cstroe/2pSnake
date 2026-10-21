@@ -262,7 +262,7 @@ pub fn handle_start_screen_input(
     // Execute selected action
     if trigger_select {
         commands.spawn((
-            AudioPlayer::new(sound_assets.eat_fruit.clone()),
+            AudioPlayer::new(sound_assets.coin.clone()),
             PlaybackSettings::DESPAWN,
         ));
 
@@ -348,7 +348,7 @@ pub fn setup_settings_ui(mut commands: Commands) {
             let settings_rows = [
                 ("• Audio System", "Enabled (fastsong.mp3 BGM + SFX Powerups)"),
                 ("• Match Duration", "5:00 Round Timer (Unlimited fruit collection)"),
-                ("• Arena Dimensions", "112 x 70 Grid Cells (Auto-scaled 16:9)"),
+                ("• Arena Dimensions", "100 x 62 Grid Cells (Auto-scaled 16:9)"),
                 ("• Game Tick Speed", "0.20s default (In-game adjust: LB/RB or +/-)"),
                 ("• Speed Boost", "Hot Pepper (Stored up to 3, press 'A' for 10s boost)"),
                 ("• Controls - Player 1", "Gamepad (D-Pad/Stick) or Keyboard WASD + Space"),
