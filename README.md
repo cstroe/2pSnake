@@ -84,7 +84,7 @@ Unless otherwise noted, asset files in this project are licensed under Creative 
 
 ## Credits
 
-This project is created with the help of the Google Antigravity tooling (AI coding).
+This project is created with the help of the Google Antigravity tooling (AI coding).  See [prompts](prompts) directory.
 
 Some assets in this repo were obtained from [opengameart.org](http://opengameart.org):
 
