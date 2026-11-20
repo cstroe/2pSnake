@@ -78,3 +78,4 @@ Some assets in this repo were obtained from [opengameart.org](http://opengameart
 * `fastsong.mp3` by Friedrich "DaGameKnower" Betz licensed CC-BY-SA 3.0: https://opengameart.org/content/fast-song
 * `coin.wav` by [Fupi](https://opengameart.org/users/fupi) licensed CC0 1.0: https://opengameart.org/content/plingy-coin
 * `SFX_Powerup_01.wav` by Jesús Lastra licensed CC-BY 3.0: https://opengameart.org/content/8-bit-powerup-1
+
