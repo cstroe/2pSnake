@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <!-- Cylindrical 3D shading across the body width (y=10 to y=54) -->
+    <linearGradient id="snake_body_cyl" x1="0%" y1="15%" x2="0%" y2="85%">
+      <stop offset="0%" stop-color="#146b2c"/>
+      <stop offset="22%" stop-color="#28b44e"/>
+      <stop offset="50%" stop-color="#34c759"/>
+      <stop offset="78%" stop-color="#28b44e"/>
+      <stop offset="100%" stop-color="#146b2c"/>
+    </linearGradient>
+
+    <clipPath id="body_straight_clip">
+      <rect x="0" y="10" width="64" height="44"/>
+    </clipPath>
+  </defs>
+
+  <!--
+    Default orientation: Horizontal (Left <-> Right).
+    Rotate by 90 deg for Vertical (Up <-> Down).
+    Cross-section spans y = 10..54 (44px thickness) at both x=0 and x=64,
+    repeating two 32px scale pattern periods seamlessly across the 64px tile.
+  -->
+
+  <g clip-path="url(#body_straight_clip)">
+    <!-- Base bright green body cylinder with light GREEN X-bands emerging between dark diamonds -->
+    <rect x="0" y="10" width="64" height="44" fill="url(#snake_body_cyl)"/>
+
+    <!-- Repeating Dorsal Dark Green Diamonds (period = 32px)
+         Half-diamond at x=0..12, full diamond at x=20..44, half-diamond at x=52..64 -->
+    <polygon points="0,20 12,32 0,44" fill="#0b4f1f"/>
+    <polygon points="20,32 32,20 44,32 32,44" fill="#0b4f1f"/>
+    <polygon points="64,20 52,32 64,44" fill="#0b4f1f"/>
+
+    <!-- Dark Green Lateral Side Triangles (forming the argyle / X-lattice) -->
+    <!-- Top edge dark triangles centered at x=16 and x=48 -->
+    <polygon points="4,10 28,10 16,22" fill="#0b4f1f"/>
+    <polygon points="36,10 60,10 48,22" fill="#0b4f1f"/>
+
+    <!-- Bottom edge dark triangles centered at x=16 and x=48 -->
+    <polygon points="4,54 28,54 16,42" fill="#0b4f1f"/>
+    <polygon points="36,54 60,54 48,42" fill="#0b4f1f"/>
+
+    <!-- Yellow Lateral Accent Triangles nested along top and bottom edges -->
+    <!-- Top edge yellow triangles at x=16 and x=48 -->
+    <polygon points="10,10 22,10 16,17" fill="#f5d126"/>
+    <polygon points="42,10 54,10 48,17" fill="#f5d126"/>
+
+    <!-- Bottom edge yellow triangles at x=16 and x=48 -->
+    <polygon points="10,54 22,54 16,47" fill="#f5d126"/>
+    <polygon points="42,54 54,54 48,47" fill="#f5d126"/>
+  </g>
+
+  <!-- Outer lateral borders (top y=10 and bottom y=54; left and right edges are open for seamless tiling) -->
+  <line x1="0" y1="10" x2="64" y2="10" stroke="#083d17" stroke-width="2"/>
+  <line x1="0" y1="54" x2="64" y2="54" stroke="#083d17" stroke-width="2"/>
+</svg>

@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <!-- Cylindrical 3D shading matching the straight body segment -->
+    <linearGradient id="snake_tail_cyl" x1="0%" y1="15%" x2="0%" y2="85%">
+      <stop offset="0%" stop-color="#146b2c"/>
+      <stop offset="22%" stop-color="#28b44e"/>
+      <stop offset="50%" stop-color="#34c759"/>
+      <stop offset="78%" stop-color="#28b44e"/>
+      <stop offset="100%" stop-color="#146b2c"/>
+    </linearGradient>
+
+    <clipPath id="tail_clip">
+      <path d="M 64,10 C 44,10 18,22 6,32 C 18,42 44,54 64,54 Z"/>
+    </clipPath>
+  </defs>
+
+  <!--
+    Default orientation: Connects to the body at the RIGHT edge (x=64, y=10..54)
+    and tapers to a rounded tip pointing LEFT (x=6, y=32).
+    Rotate by 0, 90, 180, or 270 degrees to orient the tail in any direction.
+  -->
+
+  <g clip-path="url(#tail_clip)">
+    <!-- Base tapering tail shape -->
+    <path d="M 64,10 C 44,10 18,22 6,32 C 18,42 44,54 64,54 Z"
+          fill="url(#snake_tail_cyl)"/>
+
+    <!-- Boundary Half-Diamond at right edge (x=64) to match straight/turn segments seamlessly -->
+    <polygon points="64,20 52,32 64,44" fill="#0b4f1f"/>
+
+    <!-- Scaled-down Dorsal Dark Diamond toward the tail tip -->
+    <polygon points="22,32 32,24 42,32 32,40" fill="#0b4f1f"/>
+
+    <!-- Small Tip Dark Diamond -->
+    <polygon points="8,32 14,28 20,32 14,36" fill="#0b4f1f"/>
+
+    <!-- Top Edge Dark Triangle & Nested Yellow Accent (around x=46) -->
+    <polygon points="36,11 58,10 47,21" fill="#0b4f1f"/>
+    <polygon points="41,11 53,10 47,16" fill="#f5d126"/>
+
+    <!-- Bottom Edge Dark Triangle & Nested Yellow Accent (around x=46) -->
+    <polygon points="36,53 58,54 47,43" fill="#0b4f1f"/>
+    <polygon points="41,53 53,54 47,48" fill="#f5d126"/>
+
+    <!-- Smaller Top & Bottom Yellow/Dark Accents near x=22 -->
+    <polygon points="16,20 28,16 22,25" fill="#0b4f1f"/>
+    <polygon points="19,19 25,17 22,22" fill="#f5d126"/>
+
+    <polygon points="16,44 28,48 22,39" fill="#0b4f1f"/>
+    <polygon points="19,45 25,47 22,42" fill="#f5d126"/>
+  </g>
+
+  <!-- Outer outline of tail (leaves x=64 open for seamless connection to body) -->
+  <path d="M 64,10 C 44,10 18,22 6,32 C 18,42 44,54 64,54"
+        fill="none" stroke="#083d17" stroke-width="2" stroke-linecap="butt" stroke-linejoin="round"/>
+</svg>

@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <!-- Radial shading to give the snake head a 3D rounded contour -->
+    <radialGradient id="snake_head_grad" cx="38%" cy="42%" r="58%">
+      <stop offset="0%" stop-color="#34c759"/>
+      <stop offset="65%" stop-color="#1e9e42"/>
+      <stop offset="100%" stop-color="#0d5c25"/>
+    </radialGradient>
+    <!-- Subtle inner shadow for the eye sockets/brows -->
+    <linearGradient id="snake_brow_grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0d5c25"/>
+      <stop offset="100%" stop-color="#198236"/>
+    </linearGradient>
+  </defs>
+
+  <!--
+    Default orientation: Facing RIGHT (+X).
+    Neck connects seamlessly at the left edge (x=0, y=10..54, width=44px)
+    to match the 44px width of body/tail segments.
+  -->
+
+  <!-- Forked Tongue (protruding right) -->
+  <path d="M 55,32 L 63,27 L 60,32 L 63,37 Z"
+        fill="#e53935" stroke="#8e1b18" stroke-width="1" stroke-linejoin="round"/>
+
+  <!-- Neck Base Markings (seamless transition from body pattern at x=0) -->
+  <g>
+    <!-- Base head & neck silhouette:
+         Starts at x=0, y=10..54 (44px neck), flares out into cheeks at x=26, y=4..60,
+         and tapers to a rounded snout at x=58, y=32 -->
+    <path id="head_silhouette"
+          d="M 0,10
+             L 10,10
+             C 16,10 18,4 28,4
+             C 42,4 58,19 58,32
+             C 58,45 42,60 28,60
+             C 18,60 16,54 10,54
+             L 0,54
+             Z"
+          fill="url(#snake_head_grad)"/>
+
+    <!-- Dark green diamond marking on the neck transition -->
+    <polygon points="0,20 12,32 0,44" fill="#0b4f1f"/>
+
+    <!-- Yellow edge accent triangles at the neck base (x=6) -->
+    <polygon points="1,10 11,10 6,17" fill="#f5d126"/>
+    <polygon points="1,54 11,54 6,47" fill="#f5d126"/>
+
+    <!-- Characteristic yellow diamond crest on forehead -->
+    <polygon points="15,32 22,27 29,32 22,37" fill="#f5d126" stroke="#0d5c25" stroke-width="1"/>
+  </g>
+
+  <!-- Outer outline of head (leaves x=0 open for seamless connection to body) -->
+  <path d="M 0,10
+           L 10,10
+           C 16,10 18,4 28,4
+           C 42,4 58,19 58,32
+           C 58,45 42,60 28,60
+           C 18,60 16,54 10,54
+           L 0,54"
+        fill="none" stroke="#083d17" stroke-width="2" stroke-linecap="butt" stroke-linejoin="round"/>
+
+  <!-- Left Eye (Top side when facing right, looking forward +X) -->
+  <g transform="translate(34, 21)">
+    <!-- White sclera oriented vertically across the snout -->
+    <ellipse cx="0" cy="0" rx="6.5" ry="7.8" fill="#ffffff" stroke="#083d17" stroke-width="1.5"/>
+    <!-- Dark pupil positioned toward the front (+X) looking straight ahead -->
+    <circle cx="2.6" cy="0.5" r="4.2" fill="#111111"/>
+    <!-- Specular eye glint at the front -->
+    <circle cx="4.2" cy="-1.2" r="1.5" fill="#ffffff"/>
+    <!-- Upper eyelid / brow hood on the back (-X) side of the eye -->
+    <path d="M 1,-7.8 C -7,-7.8 -7,7.8 1,7.8 C -1.5,3 -1.5,-3 1,-7.8 Z"
+          fill="url(#snake_brow_grad)" stroke="#083d17" stroke-width="1.2" stroke-linejoin="round"/>
+  </g>
+
+  <!-- Right Eye (Bottom side when facing right, looking forward +X) -->
+  <g transform="translate(34, 43)">
+    <!-- White sclera oriented vertically across the snout -->
+    <ellipse cx="0" cy="0" rx="6.5" ry="7.8" fill="#ffffff" stroke="#083d17" stroke-width="1.5"/>
+    <!-- Dark pupil positioned toward the front (+X) looking straight ahead -->
+    <circle cx="2.6" cy="-0.5" r="4.2" fill="#111111"/>
+    <!-- Specular eye glint at the front -->
+    <circle cx="4.2" cy="-2.2" r="1.5" fill="#ffffff"/>
+    <!-- Upper eyelid / brow hood on the back (-X) side of the eye -->
+    <path d="M 1,-7.8 C -7,-7.8 -7,7.8 1,7.8 C -1.5,3 -1.5,-3 1,-7.8 Z"
+          fill="url(#snake_brow_grad)" stroke="#083d17" stroke-width="1.2" stroke-linejoin="round"/>
+  </g>
+
+  <!-- Snout Nostrils -->
+  <ellipse cx="51" cy="27" rx="1.8" ry="1.1" transform="rotate(-15 51 27)" fill="#083d17"/>
+  <ellipse cx="51" cy="37" rx="1.8" ry="1.1" transform="rotate(15 51 37)" fill="#083d17"/>
+</svg>

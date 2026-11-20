@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <!--
+      Radial gradient centered at the inner corner pivot (64, 64)
+      so the 3D cylindrical highlight follows the 90-degree bend smoothly
+      from the Right edge (x=64, r=10..54) to the Bottom edge (y=64, r=10..54).
+    -->
+    <radialGradient id="snake_turn_cyl" cx="64" cy="64" r="54" gradientUnits="userSpaceOnUse">
+      <stop offset="18.5%" stop-color="#146b2c"/>
+      <stop offset="38%" stop-color="#28b44e"/>
+      <stop offset="59%" stop-color="#34c759"/>
+      <stop offset="80%" stop-color="#28b44e"/>
+      <stop offset="100%" stop-color="#146b2c"/>
+    </radialGradient>
+
+    <clipPath id="body_turn_clip">
+      <path d="M 64,10 A 54,54 0 0,0 10,64 L 54,64 A 10,10 0 0,1 64,54 Z"/>
+    </clipPath>
+  </defs>
+
+  <!--
+    Default orientation: Connects RIGHT edge (x=64, y=10..54) and BOTTOM edge (x=10..54, y=64).
+    All 4 corner turns are achieved by rotating this single SVG by 0, 90, 180, or 270 degrees!
+    Centerline radius = 32px around pivot (64, 64); inner radius = 10px, outer radius = 54px.
+  -->
+
+  <g clip-path="url(#body_turn_clip)">
+    <!-- Base curved cylinder -->
+    <path d="M 64,10 A 54,54 0 0,0 10,64 L 54,64 A 10,10 0 0,1 64,54 Z"
+          fill="url(#snake_turn_cyl)"/>
+
+    <!-- Boundary Half-Diamonds at both open ends (matches straight segment endpoints!) -->
+    <!-- Right edge (x=64) half-diamond -->
+    <polygon points="64,20 52,32 64,44" fill="#0b4f1f"/>
+    <!-- Bottom edge (y=64) half-diamond -->
+    <polygon points="20,64 32,52 44,64" fill="#0b4f1f"/>
+
+    <!-- Center Corner Dorsal Dark Diamond (at 45 deg around pivot 64,64 -> center ~ 41.4, 41.4) -->
+    <polygon points="50,50 33,50 33,33 50,33"
+             transform="rotate(45 41.4 41.4) scale(0.85, 1.05)"
+             fill="#0b4f1f"/>
+
+    <!-- Outer Arc Dark Green Triangles & Nested Yellow Accents (at 22.5 deg and 67.5 deg along outer radius 54) -->
+    <!-- Outer accent 1 (upper-right bend, ~67.5 deg from bottom / 22.5 deg from right) -->
+    <g transform="translate(64, 64) rotate(-67.5) translate(-54, 0)">
+      <polygon points="0,-13 0,13 13,0" fill="#0b4f1f"/>
+      <polygon points="0,-6.5 0,6.5 7.5,0" fill="#f5d126"/>
+    </g>
+
+    <!-- Outer accent 2 (lower-left bend, ~22.5 deg from bottom / 67.5 deg from right) -->
+    <g transform="translate(64, 64) rotate(-22.5) translate(-54, 0)">
+      <polygon points="0,-13 0,13 13,0" fill="#0b4f1f"/>
+      <polygon points="0,-6.5 0,6.5 7.5,0" fill="#f5d126"/>
+    </g>
+
+    <!-- Inner Arc Dark Green & Yellow Accent tucked into the inner bend (at 45 deg, radius 10) -->
+    <g transform="translate(64, 64) rotate(-45) translate(-10, 0)">
+      <polygon points="0,-10 0,10 -10,0" fill="#0b4f1f"/>
+      <polygon points="0,-5.5 0,5.5 -6,0" fill="#f5d126"/>
+    </g>
+  </g>
+
+  <!-- Outer and Inner Curved Borders (leaving x=64 and y=64 open for seamless connection) -->
+  <path d="M 64,10 A 54,54 0 0,0 10,64"
+        fill="none" stroke="#083d17" stroke-width="2" stroke-linecap="butt"/>
+  <path d="M 54,64 A 10,10 0 0,1 64,54"
+        fill="none" stroke="#083d17" stroke-width="2" stroke-linecap="butt"/>
+</svg>
