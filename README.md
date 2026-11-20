@@ -6,7 +6,7 @@ A 2-player competitive Snake game built using the **Bevy 2D game framework**.
 
 ## Overview & Game Rules
 
-- **Arena**: 112 squares wide by 70 squares tall (7,840 cells).
+- **Arena**: 58 squares wide by 36 squares tall (2,088 cells).
 - **Adaptive Resolution**: Cell sizing automatically scales according to the window/monitor resolution (1080p, 1440p, 4K, 16:9 large TVs) while leaving space for the top HUD.
 - **Objective**: Collect unlimited fruits across the arena while cutting off and boxing in the opponent.
 - **Victory**: The match ends when the round time runs out! The player who collected the highest fruit score wins the match.
@@ -45,7 +45,7 @@ Before the game starts, a dedicated **Controller Selection Room** is displayed:
 
 1. **Controller Select Screen**: Assign devices and press A to ready up.
 2. **3-Second Countdown**:
-   - The 112x70 arena is displayed with Player 1 (Cyan) and Player 2 (Orange) stationed on opposite sides.
+   - The 58x36 arena is displayed with Player 1 (Cyan) and Player 2 (Orange) stationed on opposite sides.
    - Animated countdown: `3` -> `2` -> `1` -> `START!`.
    - After "START!" disappears (1-second delay), player controls unlock and the game tick begins.
 3. **Active Gameplay**:
