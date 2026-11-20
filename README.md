@@ -78,7 +78,9 @@ cargo run
 
 # License
 
-Unless otherwise noted, files in this project are licensed under Creative Commons [BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/deed.en).
+Code is licensed under Apache License 2.0.
+
+Unless otherwise noted, asset files in this project are licensed under Creative Commons [BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/deed.en).
 
 ## Credits
 
