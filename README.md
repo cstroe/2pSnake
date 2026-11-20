@@ -1,6 +1,6 @@
 # 2-Player Snake (Bevy 2D)
 
-A 2-player competitive Snake game built using the **Bevy 2D game framework**d.
+A 2-player competitive Snake game built using the **Bevy 2D game framework**.
 
 ![2-Player Snake Start Screen](docs/start-screenshot.png)
 
@@ -62,6 +62,8 @@ Before the game starts, a dedicated **Controller Selection Room** is displayed:
 
 ## Running the Game
 
+You need to install the Rust toolchain in order to compile this game.  See https://rustup.rs.
+
 To run the game using Cargo:
 
 ```bash
@@ -73,11 +75,18 @@ Or for debug mode:
 ```bash
 cargo run
 ```
+
+# License
+
+Unless otherwise noted, files in this project are licensed under Creative Commons [BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/deed.en).
+
 ## Credits
+
+This project is created with the help of the Google Antigravity tooling (AI coding).
 
 Some assets in this repo were obtained from [opengameart.org](http://opengameart.org):
 
-* `fastsong.mp3` by Friedrich "DaGameKnower" Betz licensed CC-BY-SA 3.0: https://opengameart.org/content/fast-song
+* `fastsong.mp3` by Friedrich "DaGameKnower" Betz licensed CC BY-SA 3.0: https://opengameart.org/content/fast-song
 * `coin.wav` by [Fupi](https://opengameart.org/users/fupi) licensed CC0 1.0: https://opengameart.org/content/plingy-coin
-* `SFX_Powerup_01.wav` by Jesús Lastra licensed CC-BY 3.0: https://opengameart.org/content/8-bit-powerup-1
+* `SFX_Powerup_01.wav` by Jesús Lastra licensed CC BY 3.0: https://opengameart.org/content/8-bit-powerup-1
 
