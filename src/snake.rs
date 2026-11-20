@@ -1,11 +1,86 @@
 use bevy::prelude::*;
 use std::collections::VecDeque;
+use std::f32::consts::{FRAC_PI_2, PI};
 use rand::RngExt;
 use crate::constants::*;
 use crate::types::*;
 use crate::resources::*;
 use crate::components::*;
-use crate::svg_utils::SpriteAssets;
+use crate::svg_utils::{SpriteAssets, SnakeSegmentKind};
+
+/// Computes the world-space sprite size for any snake segment or head cell so that adjacent
+/// grid cells tile seamlessly without gaps.
+pub fn snake_cell_sprite_size(cell_size: f32) -> f32 {
+    cell_size.max(3.0)
+}
+
+/// Converts a grid delta between adjacent snake cells into a cardinal unit offset `(-1..=1, -1..=1)`.
+fn normalize_step(delta: IVec2) -> (i32, i32) {
+    (delta.x.signum(), delta.y.signum())
+}
+
+/// Given a snake's `body` queue (`body[0]` = head, `body[len-1]` = tail) and the segment's
+/// index `body_idx` (`1..body.len()`), returns the appropriate [`SnakeSegmentKind`] and
+/// counter-clockwise Z rotation angle (in radians) for that segment.
+pub fn compute_segment_kind_and_angle(body: &VecDeque<IVec2>, body_idx: usize) -> (SnakeSegmentKind, f32) {
+    let len = body.len();
+    if body_idx == 0 || body_idx >= len {
+        return (SnakeSegmentKind::Straight, 0.0);
+    }
+
+    let curr = body[body_idx];
+    let prev = body[body_idx - 1]; // Closer to head
+    let d_prev = normalize_step(prev - curr);
+
+    // Tail segment (last element of body)
+    if body_idx == len - 1 {
+        // Default tail template connects at its RIGHT edge (+X) and tapers to LEFT (-X).
+        // Rotate so the open connection edge faces `prev` (`d_prev`).
+        let angle = match d_prev {
+            (1, 0) => 0.0,          // Connects Right (+X)
+            (0, 1) => FRAC_PI_2,    // Connects Up (+Y)
+            (-1, 0) => PI,          // Connects Left (-X)
+            (0, -1) => -FRAC_PI_2,  // Connects Down (-Y)
+            _ => 0.0,
+        };
+        return (SnakeSegmentKind::Tail, angle);
+    }
+
+    let next = body[body_idx + 1]; // Closer to tail
+    let d_next = normalize_step(next - curr);
+
+    // Straight segment (collinear neighbors)
+    if d_prev.0 == -d_next.0 && d_prev.1 == -d_next.1 {
+        // Default straight template is Horizontal (Left <-> Right).
+        let angle = if d_prev.0 != 0 {
+            0.0
+        } else {
+            FRAC_PI_2
+        };
+        return (SnakeSegmentKind::Straight, angle);
+    }
+
+    // Corner / turn segment (orthogonal neighbors).
+    // Default turn template connects RIGHT (+X: (1, 0)) and BOTTOM (-Y: (0, -1) in Bevy world space).
+    let has_right = d_prev == (1, 0) || d_next == (1, 0);
+    let has_left = d_prev == (-1, 0) || d_next == (-1, 0);
+    let has_up = d_prev == (0, 1) || d_next == (0, 1);
+    let has_down = d_prev == (0, -1) || d_next == (0, -1);
+
+    let angle = if has_right && has_down {
+        0.0
+    } else if has_right && has_up {
+        FRAC_PI_2
+    } else if has_left && has_up {
+        PI
+    } else if has_left && has_down {
+        -FRAC_PI_2
+    } else {
+        0.0
+    };
+
+    (SnakeSegmentKind::Turn, angle)
+}
 
 pub fn spawn_initial_snakes(
     mut commands: Commands,
@@ -41,16 +116,12 @@ pub fn spawn_snake(
     start_pos: IVec2,
     direction: Direction,
 ) -> Entity {
-    let (head_image, body_image) = match player {
-        PlayerId::Player1 => (sprites.p1_head.clone(), sprites.p1_body.clone()),
-        PlayerId::Player2 => (sprites.p2_head.clone(), sprites.p2_body.clone()),
-    };
+    let head_image = sprites.snake_head(player, false);
 
     let head_world = layout.grid_to_world(start_pos);
-    let head_size = (layout.cell_size * 2.2).max(4.0);
-    let seg_size = (layout.cell_size * 1.5).max(3.0);
+    let tile_size = snake_cell_sprite_size(layout.cell_size);
 
-    // Build initial body segments trailing behind start_pos
+    // Build initial body cell positions trailing behind start_pos
     let mut body = VecDeque::new();
     let mut segment_entities = VecDeque::new();
 
@@ -60,16 +131,25 @@ pub fn spawn_snake(
     for i in 1..INITIAL_SNAKE_LENGTH {
         let seg_cell = start_pos + step_back * (i as i32);
         body.push_back(seg_cell);
+    }
 
+    for i in 1..INITIAL_SNAKE_LENGTH {
+        let seg_cell = body[i];
+        let (kind, angle) = compute_segment_kind_and_angle(&body, i);
+        let seg_image = sprites.snake_segment(player, kind, false);
         let seg_world = layout.grid_to_world(seg_cell);
         let seg_entity = commands.spawn((
             SnakeSegment { player, index: i },
             Sprite {
-                image: body_image.clone(),
-                custom_size: Some(Vec2::splat(seg_size)),
+                image: seg_image,
+                custom_size: Some(Vec2::splat(tile_size)),
                 ..default()
             },
-            Transform::from_translation(seg_world.extend(1.0)),
+            Transform {
+                translation: seg_world.extend(1.0),
+                rotation: Quat::from_rotation_z(angle),
+                ..default()
+            },
         )).id();
 
         segment_entities.push_back(seg_entity);
@@ -81,7 +161,7 @@ pub fn spawn_snake(
         SnakeHead { player },
         Sprite {
             image: head_image,
-            custom_size: Some(Vec2::splat(head_size)),
+            custom_size: Some(Vec2::splat(tile_size)),
             ..default()
         },
         Transform {
@@ -219,27 +299,32 @@ pub fn respawn_snake<F: bevy::ecs::query::QueryFilter>(
     snake.next_direction = best_dir;
     snake.body.push_back(best_pos);
 
-    let body_image = match snake.player {
-        PlayerId::Player1 => sprites.p1_body.clone(),
-        PlayerId::Player2 => sprites.p2_body.clone(),
-    };
-    let seg_size = (layout.cell_size * 1.5).max(3.0);
+    let tile_size = snake_cell_sprite_size(layout.cell_size);
 
-    // Spawn new body segments trailing behind respawn position
+    // Populate body cells trailing behind respawn position
     let step_back = best_dir.opposite().to_ivec2();
     for i in 1..INITIAL_SNAKE_LENGTH {
         let seg_cell = best_pos + step_back * (i as i32);
         snake.body.push_back(seg_cell);
+    }
 
+    for i in 1..INITIAL_SNAKE_LENGTH {
+        let seg_cell = snake.body[i];
+        let (kind, angle) = compute_segment_kind_and_angle(&snake.body, i);
+        let seg_image = sprites.snake_segment(snake.player, kind, false);
         let seg_world = layout.grid_to_world(seg_cell);
         let seg_entity = commands.spawn((
             SnakeSegment { player: snake.player, index: i },
             Sprite {
-                image: body_image.clone(),
-                custom_size: Some(Vec2::splat(seg_size)),
+                image: seg_image,
+                custom_size: Some(Vec2::splat(tile_size)),
                 ..default()
             },
-            Transform::from_translation(seg_world.extend(1.0)),
+            Transform {
+                translation: seg_world.extend(1.0),
+                rotation: Quat::from_rotation_z(angle),
+                ..default()
+            },
         )).id();
 
         snake.segment_entities.push_back(seg_entity);
@@ -269,7 +354,8 @@ pub fn cleanup_snakes(
     }
 }
 
-/// Visual effects for snakes:
+/// Visual effects and segment orientation for snakes:
+/// - Updates each segment's texture (Straight, Turn, Tail) and rotation angle to match the snake's current path.
 /// - Death transition: 1.0 second total duration (stops moving, turns grey, fades out to 0 alpha, then respawns).
 /// - Pepper speed boost: Rapid flashing strobe effect (approx 10 Hz) while active.
 /// - Normal: Resets head and body segments to normal color textures and Color::WHITE.
@@ -278,14 +364,14 @@ pub fn update_snake_boost_flashing(
     sprites: Res<SpriteAssets>,
     snakes: Query<&SnakeState>,
     mut head_sprites: Query<&mut Sprite, (With<SnakeHead>, Without<SnakeSegment>)>,
-    mut segment_sprites: Query<&mut Sprite, (With<SnakeSegment>, Without<SnakeHead>)>,
+    mut segment_query: Query<(&mut Sprite, &mut Transform), (With<SnakeSegment>, Without<SnakeHead>)>,
 ) {
     let t = time.elapsed_secs();
     // Fast pulsating strobe effect (approx 10 Hz)
     let flash_phase = (t * 22.0).sin();
 
     for snake in &snakes {
-        if snake.death_timer > 0.0 {
+        let (is_gray, tint) = if snake.death_timer > 0.0 {
             // Death transition (1.0 second total duration):
             // 1. Snake stops moving (handled in game_tick / input)
             // 2. Turns grey (0.2s - 0.5s)
@@ -300,25 +386,12 @@ pub fn update_snake_boost_flashing(
                 1.0
             };
 
-            let head_img = sprites.snake_head(snake.player, is_gray);
-            let body_img = sprites.snake_body(snake.player, is_gray);
             let tint = if is_gray {
                 Color::srgba(0.85, 0.85, 0.85, alpha)
             } else {
                 Color::srgba(1.0, 1.0, 1.0, alpha)
             };
-
-            if let Ok(mut sprite) = head_sprites.get_mut(snake.head_entity) {
-                sprite.image = head_img;
-                sprite.color = tint;
-            }
-
-            for &seg_entity in &snake.segment_entities {
-                if let Ok(mut sprite) = segment_sprites.get_mut(seg_entity) {
-                    sprite.image = body_img.clone();
-                    sprite.color = tint;
-                }
-            }
+            (is_gray, tint)
         } else {
             let is_boosted = snake.boost_timer > 0.0;
 
@@ -334,21 +407,132 @@ pub fn update_snake_boost_flashing(
                 // Normal looks
                 Color::WHITE
             };
+            (false, tint)
+        };
 
-            let head_img = sprites.snake_head(snake.player, false);
-            let body_img = sprites.snake_body(snake.player, false);
+        let head_img = sprites.snake_head(snake.player, is_gray);
+        if let Ok(mut sprite) = head_sprites.get_mut(snake.head_entity) {
+            sprite.image = head_img;
+            sprite.color = tint;
+        }
 
-            if let Ok(mut sprite) = head_sprites.get_mut(snake.head_entity) {
-                sprite.image = head_img;
+        for (i, &seg_entity) in snake.segment_entities.iter().enumerate() {
+            let body_idx = i + 1;
+            let (kind, angle) = compute_segment_kind_and_angle(&snake.body, body_idx);
+            let seg_img = sprites.snake_segment(snake.player, kind, is_gray);
+
+            if let Ok((mut sprite, mut transform)) = segment_query.get_mut(seg_entity) {
+                sprite.image = seg_img;
                 sprite.color = tint;
-            }
-
-            for &seg_entity in &snake.segment_entities {
-                if let Ok(mut sprite) = segment_sprites.get_mut(seg_entity) {
-                    sprite.image = body_img.clone();
-                    sprite.color = tint;
-                }
+                transform.rotation = Quat::from_rotation_z(angle);
             }
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_compute_segment_kind_and_angle_straight_and_tail() {
+        // Horizontal snake facing Right: head at (10, 5), body at (9, 5), (8, 5), tail at (7, 5)
+        let body = VecDeque::from(vec![
+            IVec2::new(10, 5),
+            IVec2::new(9, 5),
+            IVec2::new(8, 5),
+            IVec2::new(7, 5),
+        ]);
+
+        let (k1, a1) = compute_segment_kind_and_angle(&body, 1);
+        assert_eq!(k1, SnakeSegmentKind::Straight);
+        assert!((a1 - 0.0).abs() < 1e-5);
+
+        let (k2, a2) = compute_segment_kind_and_angle(&body, 2);
+        assert_eq!(k2, SnakeSegmentKind::Straight);
+        assert!((a2 - 0.0).abs() < 1e-5);
+
+        // Tail at (7, 5) connects to (8, 5) on its Right (+X) -> angle 0.0
+        let (k3, a3) = compute_segment_kind_and_angle(&body, 3);
+        assert_eq!(k3, SnakeSegmentKind::Tail);
+        assert!((a3 - 0.0).abs() < 1e-5);
+
+        // Vertical snake facing Up: head at (5, 10), body at (5, 9), tail at (5, 8)
+        let v_body = VecDeque::from(vec![
+            IVec2::new(5, 10),
+            IVec2::new(5, 9),
+            IVec2::new(5, 8),
+        ]);
+        let (vk1, va1) = compute_segment_kind_and_angle(&v_body, 1);
+        assert_eq!(vk1, SnakeSegmentKind::Straight);
+        assert!((va1 - FRAC_PI_2).abs() < 1e-5);
+
+        // Tail at (5, 8) connects to (5, 9) Up (+Y) -> angle +PI/2
+        let (vk2, va2) = compute_segment_kind_and_angle(&v_body, 2);
+        assert_eq!(vk2, SnakeSegmentKind::Tail);
+        assert!((va2 - FRAC_PI_2).abs() < 1e-5);
+    }
+
+    #[test]
+    fn test_compute_segment_kind_and_angle_all_four_turns() {
+        // 1. Turn connecting Right (+X) and Down (-Y) -> 0.0 rad
+        let turn_right_down = VecDeque::from(vec![
+            IVec2::new(6, 5), // Right of (5,5)
+            IVec2::new(5, 5), // Corner
+            IVec2::new(5, 4), // Below (5,5)
+        ]);
+        let (k, a) = compute_segment_kind_and_angle(&turn_right_down, 1);
+        assert_eq!(k, SnakeSegmentKind::Turn);
+        assert!((a - 0.0).abs() < 1e-5);
+
+        // 2. Turn connecting Right (+X) and Up (+Y) -> +PI/2 rad
+        let turn_right_up = VecDeque::from(vec![
+            IVec2::new(6, 5), // Right of (5,5)
+            IVec2::new(5, 5), // Corner
+            IVec2::new(5, 6), // Above (5,5)
+        ]);
+        let (k, a) = compute_segment_kind_and_angle(&turn_right_up, 1);
+        assert_eq!(k, SnakeSegmentKind::Turn);
+        assert!((a - FRAC_PI_2).abs() < 1e-5);
+
+        // 3. Turn connecting Left (-X) and Up (+Y) -> PI rad
+        let turn_left_up = VecDeque::from(vec![
+            IVec2::new(4, 5), // Left of (5,5)
+            IVec2::new(5, 5), // Corner
+            IVec2::new(5, 6), // Above (5,5)
+        ]);
+        let (k, a) = compute_segment_kind_and_angle(&turn_left_up, 1);
+        assert_eq!(k, SnakeSegmentKind::Turn);
+        assert!((a - PI).abs() < 1e-5);
+
+        // 4. Turn connecting Left (-X) and Down (-Y) -> -PI/2 rad
+        let turn_left_down = VecDeque::from(vec![
+            IVec2::new(4, 5), // Left of (5,5)
+            IVec2::new(5, 5), // Corner
+            IVec2::new(5, 4), // Below (5,5)
+        ]);
+        let (k, a) = compute_segment_kind_and_angle(&turn_left_down, 1);
+        assert_eq!(k, SnakeSegmentKind::Turn);
+        assert!((a - (-FRAC_PI_2)).abs() < 1e-5);
+    }
+
+    #[test]
+    fn test_template_svgs_render_for_both_players() {
+        use crate::svg_utils::{colorize_snake_svg, render_svg_to_image};
+        let templates = [
+            include_str!("../assets/svg/snake_head_template.svg"),
+            include_str!("../assets/svg/snake_body_straight_template.svg"),
+            include_str!("../assets/svg/snake_body_turn_template.svg"),
+            include_str!("../assets/svg/snake_tail_template.svg"),
+        ];
+        for player in [PlayerId::Player1, PlayerId::Player2] {
+            for tmpl in templates {
+                let colored = colorize_snake_svg(tmpl, player);
+                let img = render_svg_to_image(&colored, 64, 64);
+                assert!(img.is_ok(), "Failed to render template SVG for {:?}: {:?}", player, img.err());
+            }
+        }
+    }
+}
+
+

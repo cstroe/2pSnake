@@ -323,7 +323,8 @@ pub fn game_clock_tick(
 
         p1.body.push_front(p1_next);
 
-        let seg_size = (layout.cell_size * 1.5).max(3.0);
+        let seg_size = crate::snake::snake_cell_sprite_size(layout.cell_size);
+        let (first_kind, first_angle) = crate::snake::compute_segment_kind_and_angle(&p1.body, 1);
 
         if p1.growth_pending > 0 {
             p1.growth_pending -= 1;
@@ -331,22 +332,33 @@ pub fn game_clock_tick(
             let new_seg_entity = commands.spawn((
                 SnakeSegment { player: PlayerId::Player1, index: p1.body.len() },
                 Sprite {
-                    image: sprites.p1_body.clone(),
+                    image: sprites.snake_segment(PlayerId::Player1, first_kind, false),
                     custom_size: Some(Vec2::splat(seg_size)),
                     ..default()
                 },
-                Transform::from_translation(seg_world.extend(1.0)),
+                Transform {
+                    translation: seg_world.extend(1.0),
+                    rotation: Quat::from_rotation_z(first_angle),
+                    ..default()
+                },
             )).id();
 
             p1.segment_entities.push_front(new_seg_entity);
         } else {
             p1.body.pop_back();
+            let (updated_first_kind, updated_first_angle) = crate::snake::compute_segment_kind_and_angle(&p1.body, 1);
             if let Some(tail_entity) = p1.segment_entities.pop_back() {
                 if let Ok(mut transform) = segment_transforms.get_mut(tail_entity) {
                     transform.translation = layout.grid_to_world(old_head).extend(1.0);
+                    transform.rotation = Quat::from_rotation_z(updated_first_angle);
                 } else {
-                    commands.entity(tail_entity).insert(Transform::from_translation(layout.grid_to_world(old_head).extend(1.0)));
+                    commands.entity(tail_entity).insert(Transform {
+                        translation: layout.grid_to_world(old_head).extend(1.0),
+                        rotation: Quat::from_rotation_z(updated_first_angle),
+                        ..default()
+                    });
                 }
+                let _ = updated_first_kind;
                 p1.segment_entities.push_front(tail_entity);
             }
         }
@@ -413,7 +425,8 @@ pub fn game_clock_tick(
 
         p2.body.push_front(p2_next);
 
-        let seg_size = (layout.cell_size * 1.5).max(3.0);
+        let seg_size = crate::snake::snake_cell_sprite_size(layout.cell_size);
+        let (first_kind, first_angle) = crate::snake::compute_segment_kind_and_angle(&p2.body, 1);
 
         if p2.growth_pending > 0 {
             p2.growth_pending -= 1;
@@ -421,22 +434,33 @@ pub fn game_clock_tick(
             let new_seg_entity = commands.spawn((
                 SnakeSegment { player: PlayerId::Player2, index: p2.body.len() },
                 Sprite {
-                    image: sprites.p2_body.clone(),
+                    image: sprites.snake_segment(PlayerId::Player2, first_kind, false),
                     custom_size: Some(Vec2::splat(seg_size)),
                     ..default()
                 },
-                Transform::from_translation(seg_world.extend(1.0)),
+                Transform {
+                    translation: seg_world.extend(1.0),
+                    rotation: Quat::from_rotation_z(first_angle),
+                    ..default()
+                },
             )).id();
 
             p2.segment_entities.push_front(new_seg_entity);
         } else {
             p2.body.pop_back();
+            let (updated_first_kind, updated_first_angle) = crate::snake::compute_segment_kind_and_angle(&p2.body, 1);
             if let Some(tail_entity) = p2.segment_entities.pop_back() {
                 if let Ok(mut transform) = segment_transforms.get_mut(tail_entity) {
                     transform.translation = layout.grid_to_world(old_head).extend(1.0);
+                    transform.rotation = Quat::from_rotation_z(updated_first_angle);
                 } else {
-                    commands.entity(tail_entity).insert(Transform::from_translation(layout.grid_to_world(old_head).extend(1.0)));
+                    commands.entity(tail_entity).insert(Transform {
+                        translation: layout.grid_to_world(old_head).extend(1.0),
+                        rotation: Quat::from_rotation_z(updated_first_angle),
+                        ..default()
+                    });
                 }
+                let _ = updated_first_kind;
                 p2.segment_entities.push_front(tail_entity);
             }
         }

@@ -113,7 +113,7 @@ fn main() {
                 handle_gameplay_input,
                 update_snake_head_visuals,
                 game_clock_tick,
-                update_snake_boost_flashing,
+                update_snake_boost_flashing.after(game_clock_tick),
                 animate_fruits,
                 update_hud,
                 update_floating_scores,

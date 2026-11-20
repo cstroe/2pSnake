@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
-pub const GRID_WIDTH: i32 = 100;
-pub const GRID_HEIGHT: i32 = 62;
+pub const GRID_WIDTH: i32 = 72;
+pub const GRID_HEIGHT: i32 = 45;
 
 pub const INITIAL_SNAKE_LENGTH: usize = 6;
 pub const INITIAL_LIVES: u32 = 3;

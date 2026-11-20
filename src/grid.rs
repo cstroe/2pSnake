@@ -75,12 +75,11 @@ pub fn update_arena_layout(
         }
 
         // Adjust snake head & segments size and reposition to match new grid scaling
-        let head_size = (layout.cell_size * 2.2).max(4.0);
-        let seg_size = (layout.cell_size * 1.5).max(3.0);
+        let tile_size = crate::snake::snake_cell_sprite_size(layout.cell_size);
 
         for snake in &snakes_query {
             if let Ok((mut transform, mut sprite)) = head_query.get_mut(snake.head_entity) {
-                sprite.custom_size = Some(Vec2::splat(head_size));
+                sprite.custom_size = Some(Vec2::splat(tile_size));
                 if let Some(&head_cell) = snake.body.front() {
                     transform.translation = layout.grid_to_world(head_cell).extend(2.0);
                 }
@@ -89,7 +88,7 @@ pub fn update_arena_layout(
             for (i, &entity) in snake.segment_entities.iter().enumerate() {
                 if let Some(&seg_cell) = snake.body.get(i + 1) {
                     if let Ok((mut transform, mut sprite)) = segment_query.get_mut(entity) {
-                        sprite.custom_size = Some(Vec2::splat(seg_size));
+                        sprite.custom_size = Some(Vec2::splat(tile_size));
                         transform.translation = layout.grid_to_world(seg_cell).extend(1.0);
                     }
                 }
