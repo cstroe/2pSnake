@@ -1,6 +1,8 @@
-# 2-Player Tron Snake (Bevy 2D)
+# 2-Player Snake (Bevy 2D)
 
-A 2-player competitive arcade game built using the **Bevy 2D game framework**, fusing classic Snake mechanics with Tron light-cycle territory battles.
+A 2-player competitive Snake game built using the **Bevy 2D game framework**d.
+
+![2-Player Snake Start Screen](docs/start-screenshot.png)
 
 ## Overview & Game Rules
 
