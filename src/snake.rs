@@ -82,6 +82,39 @@ pub fn compute_segment_kind_and_angle(body: &VecDeque<IVec2>, body_idx: usize) -
     (SnakeSegmentKind::Turn, angle)
 }
 
+/// Computes the head's orientation `(is_turned, angle, flip_y)` given the snake's `body`
+/// (`body[0]` = head cell, `body[1]` = first neck/body segment cell) and `next_direction`.
+///
+/// - When the head faces directly away from `body[1]` (straight ahead), `is_turned = false`,
+///   `angle = next_direction.angle()`, and `flip_y = false`.
+/// - When the player turns the head 90 degrees before the snake steps forward, `is_turned = true`:
+///   the intermediate curved-neck head SVG (`snake_head_turn_template.svg`) is used, rotated by
+///   `next_direction.angle()`, and `flip_y` is set when the trailing body segment is to the head's
+///   left-hand side (left turn) so the curved neck connects seamlessly to `body[1]`.
+pub fn compute_head_pose(body: &VecDeque<IVec2>, next_direction: Direction) -> (bool, f32, bool) {
+    let angle = next_direction.angle();
+    if body.len() < 2 {
+        return (false, angle, false);
+    }
+
+    let d_neck = normalize_step(body[1] - body[0]);
+    let f = next_direction.to_ivec2();
+    let f_step = (f.x.signum(), f.y.signum());
+
+    // Straight ahead: trailing segment is directly behind next_direction
+    if d_neck == (-f_step.0, -f_step.1) || d_neck == f_step {
+        return (false, angle, false);
+    }
+
+    // 2D cross product `f.x * d_neck.y - f.y * d_neck.x`:
+    // - If `< 0`, `d_neck` is 90 deg clockwise from `f` (on the head's right-hand side -> unflipped turn template).
+    // - If `> 0`, `d_neck` is 90 deg counter-clockwise from `f` (on the head's left-hand side -> flip_y = true).
+    let cross = f_step.0 * d_neck.1 - f_step.1 * d_neck.0;
+    let flip_y = cross > 0;
+
+    (true, angle, flip_y)
+}
+
 pub fn spawn_initial_snakes(
     mut commands: Commands,
     layout: Res<ArenaLayout>,
@@ -190,21 +223,29 @@ pub fn spawn_snake(
     }).id()
 }
 
-/// Updates head rotation IMMEDIATELY whenever the player changes direction,
-/// fulfilling the requirement:
+/// Updates head rotation and intermediate turned-neck texture IMMEDIATELY whenever the player
+/// changes direction, fulfilling the requirement:
 /// "As soon as the player presses a direction, the head of the snake should be
 ///  looking in the direction that the user pressed, so that the user can see
 ///  where the snake will be moving."
+/// While turned prior to stepping, swaps to the curved-neck head SVG so the head remains
+/// seamlessly connected to the trailing body segment.
 pub fn update_snake_head_visuals(
+    sprites: Res<SpriteAssets>,
     snakes: Query<&SnakeState>,
-    mut head_transforms: Query<&mut Transform, With<SnakeHead>>,
+    mut head_query: Query<(&mut Transform, Option<&mut Sprite>), With<SnakeHead>>,
 ) {
     for snake in &snakes {
         if snake.death_timer > 0.0 {
             continue;
         }
-        if let Ok(mut transform) = head_transforms.get_mut(snake.head_entity) {
-            transform.rotation = Quat::from_rotation_z(snake.next_direction.angle());
+        let (is_turned, angle, flip_y) = compute_head_pose(&snake.body, snake.next_direction);
+        if let Ok((mut transform, sprite_opt)) = head_query.get_mut(snake.head_entity) {
+            transform.rotation = Quat::from_rotation_z(angle);
+            if let Some(mut sprite) = sprite_opt {
+                sprite.image = sprites.snake_head_variant(snake.player, is_turned, false);
+                sprite.flip_y = flip_y;
+            }
         }
     }
 }
@@ -410,11 +451,14 @@ pub fn update_snake_boost_flashing(
             (false, tint)
         };
 
-        let head_img = sprites.snake_head(snake.player, is_gray);
+        let (is_turned, head_angle, head_flip_y) = compute_head_pose(&snake.body, snake.next_direction);
+        let head_img = sprites.snake_head_variant(snake.player, is_turned, is_gray);
         if let Ok(mut sprite) = head_sprites.get_mut(snake.head_entity) {
             sprite.image = head_img;
             sprite.color = tint;
+            sprite.flip_y = head_flip_y;
         }
+        let _ = head_angle;
 
         for (i, &seg_entity) in snake.segment_entities.iter().enumerate() {
             let body_idx = i + 1;
@@ -433,6 +477,34 @@ pub fn update_snake_boost_flashing(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_compute_head_pose_straight_and_turns() {
+        // Snake moving Right: head at (10, 5), neck at (9, 5)
+        let body = VecDeque::from(vec![
+            IVec2::new(10, 5),
+            IVec2::new(9, 5),
+            IVec2::new(8, 5),
+        ]);
+
+        // Continuing straight Right -> not turned, angle 0, flip_y false
+        let (turned, angle, flip_y) = compute_head_pose(&body, Direction::Right);
+        assert!(!turned);
+        assert!((angle - 0.0).abs() < 1e-5);
+        assert!(!flip_y);
+
+        // Turning Up from Right: head faces Up (+Y), neck is to the Left (-X), which is the head's left-hand side -> turned, angle +PI/2, flip_y = true
+        let (turned_up, angle_up, flip_up) = compute_head_pose(&body, Direction::Up);
+        assert!(turned_up);
+        assert!((angle_up - FRAC_PI_2).abs() < 1e-5);
+        assert!(flip_up);
+
+        // Turning Down from Right: head faces Down (-Y), neck is to the Left (-X), which is the head's right-hand side -> turned, angle -PI/2, flip_y = false
+        let (turned_down, angle_down, flip_down) = compute_head_pose(&body, Direction::Down);
+        assert!(turned_down);
+        assert!((angle_down - (-FRAC_PI_2)).abs() < 1e-5);
+        assert!(!flip_down);
+    }
 
     #[test]
     fn test_compute_segment_kind_and_angle_straight_and_tail() {
@@ -521,6 +593,7 @@ mod tests {
         use crate::svg_utils::{colorize_snake_svg, render_svg_to_image};
         let templates = [
             include_str!("../assets/svg/snake_head_template.svg"),
+            include_str!("../assets/svg/snake_head_turn_template.svg"),
             include_str!("../assets/svg/snake_body_straight_template.svg"),
             include_str!("../assets/svg/snake_body_turn_template.svg"),
             include_str!("../assets/svg/snake_tail_template.svg"),

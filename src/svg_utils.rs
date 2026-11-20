@@ -5,6 +5,7 @@ use resvg::tiny_skia::{Pixmap, Transform};
 use crate::types::*;
 
 const SVG_SNAKE_HEAD_TEMPLATE: &str = include_str!("../assets/svg/snake_head_template.svg");
+const SVG_SNAKE_HEAD_TURN_TEMPLATE: &str = include_str!("../assets/svg/snake_head_turn_template.svg");
 const SVG_SNAKE_BODY_STRAIGHT_TEMPLATE: &str = include_str!("../assets/svg/snake_body_straight_template.svg");
 const SVG_SNAKE_BODY_TURN_TEMPLATE: &str = include_str!("../assets/svg/snake_body_turn_template.svg");
 const SVG_SNAKE_TAIL_TEMPLATE: &str = include_str!("../assets/svg/snake_tail_template.svg");
@@ -61,18 +62,22 @@ pub fn colorize_snake_svg(template_svg: &str, player: PlayerId) -> Vec<u8> {
 #[derive(Resource, Default, Clone)]
 pub struct SpriteAssets {
     pub p1_head: Handle<Image>,
+    pub p1_head_turn: Handle<Image>,
     pub p1_body: Handle<Image>,
     pub p1_body_turn: Handle<Image>,
     pub p1_tail: Handle<Image>,
     pub p2_head: Handle<Image>,
+    pub p2_head_turn: Handle<Image>,
     pub p2_body: Handle<Image>,
     pub p2_body_turn: Handle<Image>,
     pub p2_tail: Handle<Image>,
     pub p1_head_gray: Handle<Image>,
+    pub p1_head_turn_gray: Handle<Image>,
     pub p1_body_gray: Handle<Image>,
     pub p1_body_turn_gray: Handle<Image>,
     pub p1_tail_gray: Handle<Image>,
     pub p2_head_gray: Handle<Image>,
+    pub p2_head_turn_gray: Handle<Image>,
     pub p2_body_gray: Handle<Image>,
     pub p2_body_turn_gray: Handle<Image>,
     pub p2_tail_gray: Handle<Image>,
@@ -88,11 +93,19 @@ pub struct SpriteAssets {
 
 impl SpriteAssets {
     pub fn snake_head(&self, player: PlayerId, is_gray: bool) -> Handle<Image> {
-        match (player, is_gray) {
-            (PlayerId::Player1, false) => self.p1_head.clone(),
-            (PlayerId::Player1, true) => self.p1_head_gray.clone(),
-            (PlayerId::Player2, false) => self.p2_head.clone(),
-            (PlayerId::Player2, true) => self.p2_head_gray.clone(),
+        self.snake_head_variant(player, false, is_gray)
+    }
+
+    pub fn snake_head_variant(&self, player: PlayerId, is_turned: bool, is_gray: bool) -> Handle<Image> {
+        match (player, is_turned, is_gray) {
+            (PlayerId::Player1, false, false) => self.p1_head.clone(),
+            (PlayerId::Player1, false, true) => self.p1_head_gray.clone(),
+            (PlayerId::Player1, true, false) => self.p1_head_turn.clone(),
+            (PlayerId::Player1, true, true) => self.p1_head_turn_gray.clone(),
+            (PlayerId::Player2, false, false) => self.p2_head.clone(),
+            (PlayerId::Player2, false, true) => self.p2_head_gray.clone(),
+            (PlayerId::Player2, true, false) => self.p2_head_turn.clone(),
+            (PlayerId::Player2, true, true) => self.p2_head_turn_gray.clone(),
         }
     }
 
@@ -205,11 +218,13 @@ pub fn setup_svg_sprites(
     let tex_res: u32 = 128;
 
     let p1_head_svg = colorize_snake_svg(SVG_SNAKE_HEAD_TEMPLATE, PlayerId::Player1);
+    let p1_head_turn_svg = colorize_snake_svg(SVG_SNAKE_HEAD_TURN_TEMPLATE, PlayerId::Player1);
     let p1_straight_svg = colorize_snake_svg(SVG_SNAKE_BODY_STRAIGHT_TEMPLATE, PlayerId::Player1);
     let p1_turn_svg = colorize_snake_svg(SVG_SNAKE_BODY_TURN_TEMPLATE, PlayerId::Player1);
     let p1_tail_svg = colorize_snake_svg(SVG_SNAKE_TAIL_TEMPLATE, PlayerId::Player1);
 
     let p2_head_svg = colorize_snake_svg(SVG_SNAKE_HEAD_TEMPLATE, PlayerId::Player2);
+    let p2_head_turn_svg = colorize_snake_svg(SVG_SNAKE_HEAD_TURN_TEMPLATE, PlayerId::Player2);
     let p2_straight_svg = colorize_snake_svg(SVG_SNAKE_BODY_STRAIGHT_TEMPLATE, PlayerId::Player2);
     let p2_turn_svg = colorize_snake_svg(SVG_SNAKE_BODY_TURN_TEMPLATE, PlayerId::Player2);
     let p2_tail_svg = colorize_snake_svg(SVG_SNAKE_TAIL_TEMPLATE, PlayerId::Player2);
@@ -224,21 +239,25 @@ pub fn setup_svg_sprites(
     };
 
     let p1_head = load_tex(&p1_head_svg, false);
+    let p1_head_turn = load_tex(&p1_head_turn_svg, false);
     let p1_body = load_tex(&p1_straight_svg, false);
     let p1_body_turn = load_tex(&p1_turn_svg, false);
     let p1_tail = load_tex(&p1_tail_svg, false);
 
     let p2_head = load_tex(&p2_head_svg, false);
+    let p2_head_turn = load_tex(&p2_head_turn_svg, false);
     let p2_body = load_tex(&p2_straight_svg, false);
     let p2_body_turn = load_tex(&p2_turn_svg, false);
     let p2_tail = load_tex(&p2_tail_svg, false);
 
     let p1_head_gray = load_tex(&p1_head_svg, true);
+    let p1_head_turn_gray = load_tex(&p1_head_turn_svg, true);
     let p1_body_gray = load_tex(&p1_straight_svg, true);
     let p1_body_turn_gray = load_tex(&p1_turn_svg, true);
     let p1_tail_gray = load_tex(&p1_tail_svg, true);
 
     let p2_head_gray = load_tex(&p2_head_svg, true);
+    let p2_head_turn_gray = load_tex(&p2_head_turn_svg, true);
     let p2_body_gray = load_tex(&p2_straight_svg, true);
     let p2_body_turn_gray = load_tex(&p2_turn_svg, true);
     let p2_tail_gray = load_tex(&p2_tail_svg, true);
@@ -254,18 +273,22 @@ pub fn setup_svg_sprites(
 
     commands.insert_resource(SpriteAssets {
         p1_head,
+        p1_head_turn,
         p1_body,
         p1_body_turn,
         p1_tail,
         p2_head,
+        p2_head_turn,
         p2_body,
         p2_body_turn,
         p2_tail,
         p1_head_gray,
+        p1_head_turn_gray,
         p1_body_gray,
         p1_body_turn_gray,
         p1_tail_gray,
         p2_head_gray,
+        p2_head_turn_gray,
         p2_body_gray,
         p2_body_turn_gray,
         p2_tail_gray,
