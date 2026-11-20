@@ -116,9 +116,10 @@ fn main() {
                 update_snake_boost_flashing,
                 animate_fruits,
                 update_hud,
+                update_floating_scores,
             ).run_if(in_state(GameState::Playing)),
         )
-        .add_systems(OnExit(GameState::Playing), stop_background_music)
+        .add_systems(OnExit(GameState::Playing), (stop_background_music, cleanup_floating_scores))
         // Round Over State
         .add_systems(OnEnter(GameState::RoundOver), setup_round_over_ui)
         .add_systems(

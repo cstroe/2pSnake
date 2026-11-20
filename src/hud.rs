@@ -71,7 +71,7 @@ pub fn setup_hud(
 
                     row.spawn((
                         HudP1ScoreText,
-                        Text::new("Fruits: 0 | Len: 6"),
+                        Text::new("Lives: 3 | Fruits: 0 | Len: 6"),
                         TextFont { font_size: FontSize::Px(16.0), ..default() },
                         TextColor(Color::WHITE),
                     ));
@@ -171,7 +171,7 @@ pub fn setup_hud(
                 }).with_children(|row| {
                     row.spawn((
                         HudP2ScoreText,
-                        Text::new("Fruits: 0 | Len: 6"),
+                        Text::new("Lives: 3 | Fruits: 0 | Len: 6"),
                         TextFont { font_size: FontSize::Px(16.0), ..default() },
                         TextColor(Color::WHITE),
                     ));
@@ -255,13 +255,13 @@ pub fn update_hud(
             p1_peppers = snake.stored_peppers;
             p1_boost = snake.boost_timer;
             if let Some(mut text) = p1_score_text.iter_mut().next() {
-                **text = format!("Fruits: {} | Len: {}", snake.score, snake.body.len());
+                **text = format!("Lives: {} | Fruits: {} | Len: {}", snake.lives, snake.score, snake.body.len());
             }
         } else {
             p2_peppers = snake.stored_peppers;
             p2_boost = snake.boost_timer;
             if let Some(mut text) = p2_score_text.iter_mut().next() {
-                **text = format!("Fruits: {} | Len: {}", snake.score, snake.body.len());
+                **text = format!("Lives: {} | Fruits: {} | Len: {}", snake.lives, snake.score, snake.body.len());
             }
         }
     }

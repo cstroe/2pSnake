@@ -101,6 +101,7 @@ pub fn spawn_snake(
         growth_pending: 0,
         score: 0,
         respawns: 0,
+        lives: INITIAL_LIVES,
         head_entity,
         stored_peppers: 0,
         boost_timer: 0.0,

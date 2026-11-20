@@ -32,6 +32,7 @@ pub struct SnakeState {
     pub growth_pending: u32,
     pub score: u32,
     pub respawns: u32,
+    pub lives: u32,
     pub head_entity: Entity,
     pub stored_peppers: u32,
     pub boost_timer: f32,
@@ -45,6 +46,17 @@ pub struct Fruit {
     pub cell: IVec2,
     pub phase_offset: f32,
 }
+
+#[derive(Component)]
+pub struct FloatingScore {
+    pub timer: Timer,
+    pub initial_color: Color,
+    pub move_speed: f32,
+    pub outline_entities: Vec<Entity>,
+}
+
+#[derive(Component)]
+pub struct FloatingScoreOutline;
 
 #[derive(Component)]
 pub struct PlayfieldBg;

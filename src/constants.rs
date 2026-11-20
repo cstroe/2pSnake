@@ -4,6 +4,7 @@ pub const GRID_WIDTH: i32 = 100;
 pub const GRID_HEIGHT: i32 = 62;
 
 pub const INITIAL_SNAKE_LENGTH: usize = 6;
+pub const INITIAL_LIVES: u32 = 3;
 pub const DEFAULT_TICK_SECONDS: f32 = 0.2; // 200 milliseconds per tick
 pub const MIN_TICK_SECONDS: f32 = 0.02;
 pub const MAX_TICK_SECONDS: f32 = 2.0;
@@ -36,4 +37,6 @@ pub const COLOR_ARENA_BORDER: Color = Color::srgb(0.15, 0.35, 0.55);
 pub const COLOR_HUD_BG: Color = Color::srgba(0.05, 0.08, 0.14, 0.95);
 pub const COLOR_PANEL_BG: Color = Color::srgba(0.08, 0.12, 0.20, 0.95);
 pub const COLOR_READY_GREEN: Color = Color::srgb(0.1, 0.9, 0.3);
+pub const COLOR_FLOATING_SCORE: Color = Color::srgb(0.2, 1.0, 0.35);
+pub const COLOR_FLOATING_SCORE_OUTLINE: Color = Color::srgba(0.0, 0.0, 0.0, 1.0);
 pub const COLOR_TEXT_MUTED: Color = Color::srgb(0.55, 0.65, 0.75);
