@@ -44,7 +44,6 @@ pub struct SnakeState {
 pub struct Fruit {
     pub fruit_type: FruitType,
     pub cell: IVec2,
-    pub phase_offset: f32,
 }
 
 #[derive(Component)]

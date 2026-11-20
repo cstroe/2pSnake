@@ -1,103 +1,220 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <defs>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   viewBox="0 0 64 64"
+   width="64"
+   height="64"
+   version="1.1"
+   id="svg1590"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1544">
     <!-- Radial shading to give the turning snake head & curved neck a 3D rounded contour -->
-    <radialGradient id="snake_head_turn_grad" cx="38%" cy="48%" r="58%">
-      <stop offset="0%" stop-color="#34c759"/>
-      <stop offset="65%" stop-color="#1e9e42"/>
-      <stop offset="100%" stop-color="#0d5c25"/>
+    <radialGradient
+       id="snake_head_turn_grad"
+       cx="31.601228"
+       cy="29.425888"
+       r="31.220149"
+       gradientTransform="matrix(0.92196181,0,0,1.1192178,-1.6133878,-0.26142074)"
+       fx="31.601228"
+       fy="29.425888"
+       gradientUnits="userSpaceOnUse">
+      <stop
+         offset="0%"
+         stop-color="#34c759"
+         id="stop1529" />
+      <stop
+         offset="65%"
+         stop-color="#1e9e42"
+         id="stop1531" />
+      <stop
+         offset="100%"
+         stop-color="#0d5c25"
+         id="stop1533" />
     </radialGradient>
     <!-- Subtle inner shadow for the eye sockets/brows -->
-    <linearGradient id="snake_brow_turn_grad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#0d5c25"/>
-      <stop offset="100%" stop-color="#198236"/>
+    <linearGradient
+       id="snake_brow_turn_grad"
+       x1="0%"
+       y1="0%"
+       x2="100%"
+       y2="0%">
+      <stop
+         offset="0%"
+         stop-color="#0d5c25"
+         id="stop1536" />
+      <stop
+         offset="100%"
+         stop-color="#198236"
+         id="stop1538" />
     </linearGradient>
-
-    <clipPath id="head_turn_clip">
-      <path d="M 10,64
-               C 10,32 14,4 28,4
-               C 42,4 58,19 58,32
-               C 58,45 42,60 28,60
-               C 21,60 17,57 14,54
-               A 10,10 0 0,0 54,64
-               Z"/>
+    <clipPath
+       id="head_turn_clip">
+      <path
+         d="M 10,64                C 10,32 14,4 28,4                C 42,4 58,19 58,32                C 58,46 54,56 54,64                Z"
+         id="path1541" />
     </clipPath>
   </defs>
-
   <!--
     Intermediate Turning Snake Head SVG:
     - Snout & eyes face RIGHT (+X, centered at y=32).
-    - Neck curves 90 degrees to connect seamlessly at the BOTTOM edge (x=10..54, y=64).
+    - Neck curves 90 degrees and overlaps seamlessly across the entire BOTTOM connection edge
+      (x=10..54, y=64), with the right cheek flowing smoothly into the inner corner at (54, 64)
+      so no background gap can appear between the turned head and the trailing neck segment.
     - Used when the snake's neck connects to the body on the head's right-hand side (a right turn);
       flipping Y (flip_y = true) mirrors it across y=32 so the neck connects at the TOP edge
       (x=10..54, y=0) for a left turn!
     - Rotating by 0, 90, 180, or 270 degrees covers all 8 possible 90-degree head turns.
   -->
-
   <!-- Forked Tongue (protruding right) -->
-  <path d="M 55,32 L 63,27 L 60,32 L 63,37 Z"
-        fill="#e53935" stroke="#8e1b18" stroke-width="1" stroke-linejoin="round"/>
-
+  <path
+     d="M 55,32 L 63,27 L 60,32 L 63,37 Z"
+     fill="#e53935"
+     stroke="#8e1b18"
+     stroke-width="1"
+     stroke-linejoin="round"
+     id="path1546" />
   <!-- Curved Neck & Head Base with Markings -->
-  <g clip-path="url(#head_turn_clip)">
-    <path d="M 10,64
-             C 10,32 14,4 28,4
-             C 42,4 58,19 58,32
-             C 58,45 42,60 28,60
-             C 21,60 17,57 14,54
-             A 10,10 0 0,0 54,64
-             Z"
-          fill="url(#snake_head_turn_grad)"/>
-
+  <g
+     clip-path="url(#head_turn_clip)"
+     id="g1562"
+     transform="matrix(1.030484,0,0,1.0056202,-1.7680695,-0.35969557)">
+    <path
+       d="m 8.6633958,64 c 0,-32.13071 4.1107132,-60.2450819 18.4982102,-60.2450819 14.387497,0 33.769997,15.3811809 30.83035,28.1143719 C 53.585076,50.957854 51.610193,56.2438 53.881243,64 Z"
+       fill="url(#snake_head_turn_grad)"
+       id="path1548"
+       style="fill:url(#snake_head_turn_grad);stroke-width:1.01581" />
     <!-- Boundary Half-Diamond at bottom edge (y=64, x=20..44) to match body segments seamlessly -->
-    <polygon points="20,64 32,52 44,64" fill="#0b4f1f"/>
-
+    <polygon
+       points="44,64 20,64 32,52 "
+       fill="#0b4f1f"
+       id="polygon1550" />
     <!-- Outer curve yellow & dark green accent triangle on the left bend of the neck -->
-    <polygon points="10,58 10,38 20,48" fill="#0b4f1f"/>
-    <polygon points="10,54 10,42 16,48" fill="#f5d126"/>
-
-    <!-- Inner curve accent near (52, 60) -->
-    <polygon points="46,64 54,64 50,57" fill="#f5d126"/>
-
+    <polygon
+       points="20,48 10,58 10,38 "
+       fill="#0b4f1f"
+       id="polygon1552" />
+    <polygon
+       points="16,48 10,54 10,42 "
+       fill="#f5d126"
+       id="polygon1554" />
+    <!-- Inner curve yellow & dark green accent along the right neck edge -->
+    <polygon
+       points="55,48 47,56 54,62 "
+       fill="#0b4f1f"
+       id="polygon1556"
+       transform="matrix(1.243421,0,0,0.99931227,-14.418227,-0.19751948)" />
+    <polygon
+       points="54,60 55,51 49,56 "
+       fill="#f5d126"
+       id="polygon1558"
+       transform="translate(-1.5191873,-0.4394655)" />
     <!-- Characteristic yellow diamond crest on forehead (slightly angled into the turn) -->
-    <polygon points="17,32 23,27 30,32 23,37" fill="#f5d126" stroke="#0d5c25" stroke-width="1"/>
+    <polygon
+       points="30,32 23,37 17,32 23,27 "
+       fill="#f5d126"
+       stroke="#0d5c25"
+       stroke-width="1"
+       id="polygon1560" />
   </g>
-
   <!-- Outer outline of curved head (leaves y=64, x=10..54 open for seamless connection to body) -->
-  <path d="M 10,64
-           C 10,32 14,4 28,4
-           C 42,4 58,19 58,32
-           C 58,45 42,60 28,60
-           C 21,60 17,57 14,54
-           A 10,10 0 0,0 54,64"
-        fill="none" stroke="#083d17" stroke-width="2" stroke-linecap="butt" stroke-linejoin="round"/>
-
+  <path
+     d="M 10,64 C 10.693945,32 7.7336179,7.8949874 28,4 41.748391,1.3577026 57.638318,19 57.638318,32 c 0,7 -4.359516,17.49294 -5.269095,22.74294 C 51.459643,59.99294 54,60 54,64"
+     fill="none"
+     stroke="#083d17"
+     stroke-width="2"
+     stroke-linecap="butt"
+     stroke-linejoin="round"
+     id="path1564" />
   <!-- Left Eye (Top side when facing right, looking forward +X) -->
-  <g transform="translate(34, 21)">
+  <g
+     transform="translate(34, 21)"
+     id="g1574">
     <!-- White sclera oriented vertically across the snout -->
-    <ellipse cx="0" cy="0" rx="6.5" ry="7.8" fill="#ffffff" stroke="#083d17" stroke-width="1.5"/>
+    <ellipse
+       cx="0"
+       cy="0"
+       rx="6.5"
+       ry="7.8"
+       fill="#ffffff"
+       stroke="#083d17"
+       stroke-width="1.5"
+       id="ellipse1566" />
     <!-- Dark pupil positioned toward the front (+X) looking straight ahead -->
-    <circle cx="2.6" cy="0.5" r="4.2" fill="#111111"/>
+    <circle
+       cx="2.6"
+       cy="0.5"
+       r="4.2"
+       fill="#111111"
+       id="circle1568" />
     <!-- Specular eye glint at the front -->
-    <circle cx="4.2" cy="-1.2" r="1.5" fill="#ffffff"/>
+    <circle
+       cx="4.2"
+       cy="-1.2"
+       r="1.5"
+       fill="#ffffff"
+       id="circle1570" />
     <!-- Upper eyelid / brow hood on the back (-X) side of the eye -->
-    <path d="M 1,-7.8 C -7,-7.8 -7,7.8 1,7.8 C -1.5,3 -1.5,-3 1,-7.8 Z"
-          fill="url(#snake_brow_turn_grad)" stroke="#083d17" stroke-width="1.2" stroke-linejoin="round"/>
+    <path
+       d="M 1,-7.8 C -7,-7.8 -7,7.8 1,7.8 C -1.5,3 -1.5,-3 1,-7.8 Z"
+       fill="url(#snake_brow_turn_grad)"
+       stroke="#083d17"
+       stroke-width="1.2"
+       stroke-linejoin="round"
+       id="path1572" />
   </g>
-
   <!-- Right Eye (Bottom side when facing right, looking forward +X) -->
-  <g transform="translate(34, 43)">
+  <g
+     transform="translate(34, 43)"
+     id="g1584">
     <!-- White sclera oriented vertically across the snout -->
-    <ellipse cx="0" cy="0" rx="6.5" ry="7.8" fill="#ffffff" stroke="#083d17" stroke-width="1.5"/>
+    <ellipse
+       cx="0"
+       cy="0"
+       rx="6.5"
+       ry="7.8"
+       fill="#ffffff"
+       stroke="#083d17"
+       stroke-width="1.5"
+       id="ellipse1576" />
     <!-- Dark pupil positioned toward the front (+X) looking straight ahead -->
-    <circle cx="2.6" cy="-0.5" r="4.2" fill="#111111"/>
+    <circle
+       cx="2.6"
+       cy="-0.5"
+       r="4.2"
+       fill="#111111"
+       id="circle1578" />
     <!-- Specular eye glint at the front -->
-    <circle cx="4.2" cy="-2.2" r="1.5" fill="#ffffff"/>
+    <circle
+       cx="4.2"
+       cy="-2.2"
+       r="1.5"
+       fill="#ffffff"
+       id="circle1580" />
     <!-- Upper eyelid / brow hood on the back (-X) side of the eye -->
-    <path d="M 1,-7.8 C -7,-7.8 -7,7.8 1,7.8 C -1.5,3 -1.5,-3 1,-7.8 Z"
-          fill="url(#snake_brow_turn_grad)" stroke="#083d17" stroke-width="1.2" stroke-linejoin="round"/>
+    <path
+       d="M 1,-7.8 C -7,-7.8 -7,7.8 1,7.8 C -1.5,3 -1.5,-3 1,-7.8 Z"
+       fill="url(#snake_brow_turn_grad)"
+       stroke="#083d17"
+       stroke-width="1.2"
+       stroke-linejoin="round"
+       id="path1582" />
   </g>
-
   <!-- Snout Nostrils -->
-  <ellipse cx="51" cy="27" rx="1.8" ry="1.1" transform="rotate(-15 51 27)" fill="#083d17"/>
-  <ellipse cx="51" cy="37" rx="1.8" ry="1.1" transform="rotate(15 51 37)" fill="#083d17"/>
+  <ellipse
+     cx="51"
+     cy="27"
+     rx="1.8"
+     ry="1.1"
+     transform="rotate(-15 51 27)"
+     fill="#083d17"
+     id="ellipse1586" />
+  <ellipse
+     cx="51"
+     cy="37"
+     rx="1.8"
+     ry="1.1"
+     transform="rotate(15 51 37)"
+     fill="#083d17"
+     id="ellipse1588" />
 </svg>

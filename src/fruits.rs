@@ -21,9 +21,13 @@ pub fn spawn_initial_fruits(
         }
     }
 
-    for i in 0..NUM_CONCURRENT_FRUITS {
-        spawn_one_fruit(&mut commands, &layout, &sprites, &mut occupied, i as f32 * 0.3, &mut rng);
+    for _ in 0..NUM_CONCURRENT_FRUITS {
+        spawn_one_fruit(&mut commands, &layout, &sprites, &mut occupied, &mut rng);
     }
+}
+
+pub fn fruit_sprite_size(cell_size: f32) -> f32 {
+    (cell_size * 1.54).max(3.0)
 }
 
 pub fn spawn_one_fruit(
@@ -31,7 +35,6 @@ pub fn spawn_one_fruit(
     layout: &ArenaLayout,
     sprites: &SpriteAssets,
     occupied: &mut Vec<IVec2>,
-    phase_offset: f32,
     rng: &mut impl rand::Rng,
 ) -> Option<Entity> {
     for _ in 0..100 {
@@ -44,13 +47,12 @@ pub fn spawn_one_fruit(
 
             let fruit_type = FruitType::random();
             let world_pos = layout.grid_to_world(cell);
-            let fruit_size = (layout.cell_size * 2.2).max(4.0);
+            let fruit_size = fruit_sprite_size(layout.cell_size);
 
             let entity = commands.spawn((
                 Fruit {
                     fruit_type,
                     cell,
-                    phase_offset,
                 },
                 Sprite {
                     image: sprites.fruit_handle(fruit_type),
@@ -66,18 +68,15 @@ pub fn spawn_one_fruit(
     None
 }
 
-/// Gentle pulsating glow effect for fruits so players can spot them instantly
+/// Keeps fruits at their static base size without pulsating larger and smaller
 pub fn animate_fruits(
-    time: Res<Time>,
     layout: Res<ArenaLayout>,
-    mut query: Query<(&mut Sprite, &Fruit)>,
+    mut query: Query<&mut Sprite, With<Fruit>>,
 ) {
-    let base_size = (layout.cell_size * 2.2).max(4.0);
-    let t = time.elapsed_secs();
+    let base_size = fruit_sprite_size(layout.cell_size);
 
-    for (mut sprite, fruit) in &mut query {
-        let pulse = 1.0 + 0.22 * (t * 4.0 + fruit.phase_offset).sin();
-        sprite.custom_size = Some(Vec2::splat(base_size * pulse));
+    for mut sprite in &mut query {
+        sprite.custom_size = Some(Vec2::splat(base_size));
     }
 }
 

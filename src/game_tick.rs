@@ -305,7 +305,7 @@ pub fn game_clock_tick(
 
             let mut occupied: Vec<IVec2> = p1.body.iter().chain(p2.body.iter()).copied().collect();
             let mut rng = rand::rng();
-            spawn_one_fruit(&mut commands, &layout, &sprites, &mut occupied, 0.0, &mut rng);
+            spawn_one_fruit(&mut commands, &layout, &sprites, &mut occupied, &mut rng);
 
             // Play fruit eating sound effect:
             // "coin.wav" for normal fruits, "SFX_Powerup_01.wav" for Hot Pepper
@@ -407,7 +407,7 @@ pub fn game_clock_tick(
 
             let mut occupied: Vec<IVec2> = p1.body.iter().chain(p2.body.iter()).copied().collect();
             let mut rng = rand::rng();
-            spawn_one_fruit(&mut commands, &layout, &sprites, &mut occupied, 0.0, &mut rng);
+            spawn_one_fruit(&mut commands, &layout, &sprites, &mut occupied, &mut rng);
 
             // Play fruit eating sound effect:
             // "coin.wav" for normal fruits, "SFX_Powerup_01.wav" for Hot Pepper
@@ -802,7 +802,6 @@ mod tests {
             Fruit {
                 fruit_type: FruitType::Starfruit,
                 cell: IVec2::new(11, 10),
-                phase_offset: 0.0,
             },
             Transform::default(),
         )).id();

@@ -68,7 +68,7 @@ pub fn update_arena_layout(
         }
 
         // Adjust fruit size and reposition to match new grid scaling
-        let fruit_size = (layout.cell_size * 2.2).max(4.0);
+        let fruit_size = crate::fruits::fruit_sprite_size(layout.cell_size);
         for (mut transform, mut sprite, fruit) in &mut fruit_query {
             sprite.custom_size = Some(Vec2::splat(fruit_size));
             transform.translation = layout.grid_to_world(fruit.cell).extend(1.5);
